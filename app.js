@@ -7,8 +7,9 @@ import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import helmet from "helmet";
-import user from './routes/userRoute.js'
-import { rateLimitRequest, distributedRateLimitMiddleware } from './middleware/rateLimit.js'
+import  user  from './routes/userRoute.js';
+import  parks  from './routes/parkings.js';
+import { rateLimitRequest, distributedRateLimitMiddleware, rateLimitMiddleware } from './middleware/rateLimit.js'
 const PORT = process.env.PORT || 3000
 const app = express()
 
@@ -19,9 +20,10 @@ app.use(express.json())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cookieParser())
-app.use(rateLimitRequest)
-app.use(distributedRateLimitMiddleware);
+// app.use(rateLimitRequest)
+// app.use(rateLimitMiddleware);
 app.use('/api/user', user)
+app.use('/api/parking', parks)
 
 const start = async () => {
     try {

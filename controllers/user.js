@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import nodemailer, { createTransport } from 'nodemailer'
 import bcrypt from 'bcryptjs'
 import validator from 'validator'
-
+import CryptoJS from 'crypto-js';
 
 export const register = async (req, res) => {
     try {
@@ -55,52 +55,116 @@ export const register = async (req, res) => {
 
         return res.status(200).json(newUser)
     } catch (error) {
+        console.log(error)
         throw new Error(error)
+    }
+}
+
+
+export const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ msg: "Please provide email and password to login" });
+        }
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json("Password or email may be incorrect");
+        }
+        if (user && (await bcrypt.compare(password.toString(), user.password))) {
+            if (user.emailVerified == false) {
+                return res.status(400).json("Please verify your Email and try again");
+            }
+            console.log(`${user.username} Loged-in`);
+            const token = jwt.sign({ email: user.email }, process.env.TOKEN_KEY, { expiresIn: '90d' });
+            res.cookie('token', token, { maxAge: 240 * 60 * 60 * 1000 });
+            res.status(200).json({ token });
+        } else {
+            return res.status(400).json("Password or email may be incorrect 2");
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json(error);
+    }
+}
+
+export const logout = async (req, res) => {
+    try {
+        const token = '';
+        res.cookie('token', token)
+        res.status(200).json({ token });
+    } catch (error) {
+        res.status(500).json(error);
     }
 }
 
 export const verifyCode = async (req, res) => {
     try {
-        const code = req.body.code;
+        const { code, email } = req.body;
+
         if (!validator.isLength(code, { min: 6, max: 6 })) {
             return res.status(400).json({ message: "Enter 6 numbers code" })
         }
-        const usermail = req.body.email;
-        if (!validator.isEmail(usermail)) {
+        if (!validator.isEmail(email)) {
             return res.status(400).json({ message: "Invalid Email" })
         }
-        let user = await User.findOne({ email: usermail });
+        const user = await User.findOne({ email }).select('verifyEmailCode expirationCodeTime');
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
+        }
+        console.log(user);
         const verifyEmailCode = user.verifyEmailCode;
         const expirationCodeTime = user.expirationCodeTime;
-
         if (code.toString() !== verifyEmailCode) {
-            res.json("Code is incorrect");
+            return res.json("Code is incorrect");
         } else if (Date.now() > expirationCodeTime) {
-            res.json("Code has expired. Please resend it again.");
+            return res.json("Code has expired Please resend it again.");
         } else {
-            user = await User.findOneAndUpdate(
-                { email: usermail },
+            const updatedUser = await User.findOneAndUpdate(
+                { email },
                 { emailVerified: true },
                 { new: true }
             );
-            return res.status(200).json(user.emailVerified);
+
+            if (!updatedUser) {
+                return res.status(404).json({ message: "User not found after update" });
+            }
+            const token = jwt.sign({ email: user.email }, process.env.TOKEN_KEY, { expiresIn: '90d' });
+            res.cookie('token', token, { maxAge: 240 * 60 * 60 * 1000 });
+            return res.status(200).json({ userVerifyed: user.emailVerified, token: token });
         }
+
     } catch (error) {
-        console.error(error);
-        throw new Error(error);
+        console.log(error);
+        return res.status(500).json({ message: error });
     }
 };
 
 
-export const forgotPassword = async (req, res) => {
-    const email = req.body.email
-    if (!validator.isEmail(email)) {
-        return res.status(400).json({ message: "Invalid Email" })
+export const 
+
+
+forgotPassword = async (req, res) => {
+    try {
+        const email = req.body.email
+        if (!validator.isEmail(email)) {
+            return res.status(400).json({ message: "Invalid Email" })
+        }
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json("User not found");
+        }
+        const userResetPasswordCode = generateVerificationCode();
+        const subject = "Reset Password email";
+        const message = `Your reset password code  is: ${userResetPasswordCode} the expiration time in 5 minutes`
+        await sendEmail(email, subject, message);
+        user.resetPasswordCode = userResetPasswordCode;
+        user.resetPasswordExpiration = Date.now() + 5 * 60 * 1000;
+        await user.save();
+        return res.status(200).json({ message: "Password reset email sent" });
+    } catch (error) {
+        return res.status(500).json({ message: "Error processing request" });
     }
-    const subject = "Reset Password"
-    const message = //********** */
-        sendEmail(email, subject, message)
-    // Send URL to redirect to the reset passord flutter page then 
 }
 
 export const resetPassword = async (req, res) => {
@@ -118,24 +182,54 @@ export const resetPassword = async (req, res) => {
     }
     const encryptedPassword = await bcrypt.hash(password, 10);
     const userUpdated = await User.findBy
-
-    
-    // ***************************************/
-    // Complete the code here ********
-    //****************************************/
 }
+
+
+export const verifyResetPasswordCode = async (req, res) => {
+    try {
+        const code = req.body.code;
+        if (!validator.isLength(code, { min: 6, max: 6 })) {
+            return res.status(400).json({ message: "Enter 6 numbers code" })
+        }
+        const usermail = req.body.email;
+        if (!validator.isEmail(usermail)) {
+            return res.status(400).json({ message: "Invalid Email" })
+        }
+        let user = await User.findOne({ email: usermail });
+        if (!user) {
+            return res.status(400).json("User not found");
+        }
+        const verifyResetPassordCode = user.resetPasswordCode;
+        const expirationResetPasswordCodeTime = user.resetPasswordExpiration;
+
+        if (code.toString() !== verifyResetPassordCode) {
+            return res.status(400).json("Code is incorrect");
+        } else if (Date.now() > expirationResetPasswordCodeTime) {
+            return res.status(400).json("Code has expired. Please resend it again.");
+        } else {
+            return res.status(200).json("Code verified successfully");
+        }
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
 
 export const sendCode = async (req, res) => {
     try {
         const email = req.body.email;
+        if (!email) {
+            return res.status(400).json("Please provide the email")
+        }
         const otp = generateVerificationCode()
         const message = `Your OTP code is: ${otp} the expiration time in 5 minutes`
         const subject = `Email Verification`
         const Expiration = Date.now() + 5 * 60 * 1000; // 5 minutes
         sendEmail(email, subject, message)
         const sentUser = await User.findOneAndUpdate({ email }, { expirationCodeTime: Expiration, verifyEmailCode: otp.toString() }, { new: true })
-        return res.status(200).json(sentUser);
+        return res.status(200).json(sentUser.verifyEmailCode);
     } catch (error) {
+        console.log(error);
         throw new Error(error)
     }
 };
@@ -163,7 +257,6 @@ const sendEmail = async (email, subject, message) => {
             text: message
         })
         console.log("Email sent successfully");
-
     } catch (error) {
         console.log("email not sent");
         console.log(error);

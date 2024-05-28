@@ -32,9 +32,6 @@ const userSchema = new Schema({
         type: Boolean,
         default: false,
     },
-    token: {
-        type: String
-    },
     car: {
         type: Schema.ObjectId,
         // required: true, // Edit car to be Query,
@@ -58,9 +55,17 @@ const userSchema = new Schema({
         type: String,
         default: ""
     },
+    resetPasswordCode: {
+        type: String,
+        default: ''
+    },
+    resetPasswordExpiration: {
+        type: Date,
+        default: null
+    },
     bookedPark: {
-        parkNumber: { type: Number, required: true, default: 0 },
-        bookingEndTime: { type: Date, required: true, default: null }
+        parkNumber: { type: Number },
+        bookingEndTime: { type: Date }
     },
     money: {
         type: Number,

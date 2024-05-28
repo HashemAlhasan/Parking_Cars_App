@@ -2,8 +2,6 @@ import { rateLimit } from "express-rate-limit";
 import redis from 'redis'
 import { RateLimiterRedis } from 'rate-limiter-flexible'
 
-
-
 // Local rate Limit
 export const rateLimitRequest = rateLimit({
     windowMs: 24 * 60 * 60 * 1000,        // 24h 
@@ -22,12 +20,21 @@ const redisClient = redis.createClient();
 
 export const distributedLimiter = new RateLimiterRedis({
     storeClient: redisClient,
-    keyPrefix: "rateLimiter",
+    keyPrefix: 'rateLimiter:',
     points: 1000, // Max requests
     duration: 60,// Time Window in seconds
+    blockDuration: 60 * 60,
 })
 
 
+export const rateLimitMiddleware = async (req, res, next) => {
+    try {
+        await distributedLimiter.consume(req.ip);
+        next();
+    } catch (err) {
+        res.status(429).send('Too many requests. Please try again later.');
+    }
+};
 
 export const distributedRateLimitMiddleware = (req, res, next) => {
     const clientIP = req.ip

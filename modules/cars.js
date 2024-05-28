@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, Type } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 
 const carSchema = new Schema({
     onerId: { type: Schema.ObjectId, ref: 'User' },
@@ -7,13 +7,13 @@ const carSchema = new Schema({
     carNumber:{type: String, required: true},
     carProblems: {
         Mechanic: [{
-            type: string,
+            type: String,
             required: true,
             default:'NO Problems'
             // enum:["Overheating","Flat Tire","Brakes Issues","Car Starter","Steering Issues","Malfunctioning Wipers"]
         }],
         Electric:  [{
-            type: string,
+            type: String,
             required: true,
             default:'NO Problems'
         }]

@@ -1,5 +1,6 @@
-import Parking from "../modules/parking";
-import User from "../modules/users";
+
+import Parking from "../modules/parking.js";
+import User from "../modules/users.js";
 
 export const bookingPark = async (req, res) => {
     try {
@@ -69,6 +70,24 @@ export const bookingRepairPark = async (req, res) => {
         emptyPark.carNumber = user.car.carNumber //تاكد من الشغل هون بالحرف
         await emptyPark.save()
         return res.status(200).json({ carRepairNumber: emptyPark.carRepairNumber })
+    } catch (error) {
+        return res.status(500).json({ message: error });
+    }
+}
+
+
+
+export const addParking = async (req, res) => {
+    try {
+        const { parkingNumber, parkingName, location, park, carRepairPlaces } = req.body;
+        const newParking = await Parking.create({
+            parkingNumber: parkingNumber,
+            parkingName: parkingName,
+            location: location,
+            park: park,
+            carRepairPlaces: carRepairPlaces,
+        })
+        return res.status(200).json({ newParking });
     } catch (error) {
         return res.status(500).json({ message: error });
     }
