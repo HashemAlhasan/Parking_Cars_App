@@ -1,20 +1,23 @@
 
+import { StatusCodes } from "http-status-codes";
 import Parking from "../modules/parking.js";
 import User from "../modules/users.js";
 
+
 export const bookingPark = async (req, res) => {
     try {
-        const { username, carNumber, duration } = req.body;
-        const parkingName = req.body.parkingname;
+        const { username, carNumber, duration,Spot } = req.body;
+        const parkingNumber = req.body.parkingNumber;
 
-        const parkChoosed = await Parking.findOne({ parkingName });
+
+        const parkChoosed = await Parking.findOne({"location.parkingNumber":parkingNumber });
         const user = await User.findOne({ username });
 
         if (!parkChoosed) {
             return res.status(400).json({ message: 'Parking not found' });
         }
 
-        const emptyPark = parkChoosed.park.find(park => !park.filled);
+        const emptyPark = parkChoosed.park.find(Spot);
 
         if (!emptyPark) {
             return res.status(400).json({ message: 'No empty parks available' });
@@ -79,16 +82,26 @@ export const bookingRepairPark = async (req, res) => {
 
 export const addParking = async (req, res) => {
     try {
-        const { parkingNumber, parkingName, location, park, carRepairPlaces } = req.body;
+        const { parkingNumber, parkingName, location, park, carRepairPlaces ,Price} = req.body;
         const newParking = await Parking.create({
             parkingNumber: parkingNumber,
             parkingName: parkingName,
             location: location,
             park: park,
             carRepairPlaces: carRepairPlaces,
+            Price :Price
         })
         return res.status(200).json({ newParking });
     } catch (error) {
         return res.status(500).json({ message: error });
+    }
+}
+export const ParkingTimer= async(req,res)=>{
+    try {
+                const carNumber = req.params
+                const Info= Parking.findOne()
+         return res.status(StatusCodes.OK).send("ParkingTimer")
+    } catch (error) {
+        
     }
 }
