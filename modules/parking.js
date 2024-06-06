@@ -2,8 +2,7 @@ import mongoose, { Schema, model } from "mongoose";
 
 
 const parkingSchema = new Schema({
-    parkingNumber: { type: Number, required: true },
-    parkingName: { type: String, required: true },
+   
     location: {
         type: {
             type: String,
@@ -13,7 +12,10 @@ const parkingSchema = new Schema({
         coordinates: {
             type: [Number],
             required: true
-        }
+        },
+        parkingNumber: { type: Number, required: true },
+        parkingName: { type: String, required: true },
+        Price: {type:Number ,required: true}
     },
     park: [
         {
@@ -21,6 +23,8 @@ const parkingSchema = new Schema({
             filled: { type: Boolean, default: false },
             carNumber: { type: String, default: null },
             bookingEndTime: { type: Date, required: true }
+            UserID :{type : }
+
         }
     ],
     carRepairPlaces: [
