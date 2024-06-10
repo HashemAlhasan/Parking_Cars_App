@@ -54,6 +54,8 @@ export const register = async (req, res,) => {
             carType: carType,
             carNumber: carNumber
         })
+        newUser.car=newUserCar._id
+       await newUser.save()
          await SendVerifyCode(email)
 
            //console.log(newUser);
@@ -84,7 +86,7 @@ export const login = async (req, res) => {
             console.log(`${user.username} Loged-in`);
             const token = jwt.sign({ email: user.email }, process.env.TOKEN_KEY, { expiresIn: '90d' });
             res.cookie('token', token, { maxAge: 240 * 60 * 60 * 1000 });
-            res.status(200).json({message:"Login Sucessfly",token:token });
+            res.status(200).json({message:"Login Sucessfly",token:token ,user : user});
         } else {
             return res.status(400).json({message:"Password or email may be incorrect 2"});
         }

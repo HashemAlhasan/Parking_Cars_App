@@ -9,6 +9,7 @@ import cors from 'cors'
 import helmet from "helmet";
 import  user  from './routes/userRoute.js';
 import  parks  from './routes/parkings.js';
+import problems from './routes/CarProblems.js';
 import { rateLimitRequest, distributedRateLimitMiddleware, rateLimitMiddleware } from './middleware/rateLimit.js'
 const PORT = process.env.PORT || 3000
 const app = express()
@@ -24,6 +25,7 @@ app.use(cookieParser())
 // app.use(rateLimitMiddleware);
 app.use('/api/user', user)
 app.use('/api/parking', parks)
+app.use('/api/problem',problems)
 
 const start = async () => {
     try {

@@ -37,7 +37,7 @@ export const  getParkingSpots = async(req,res)=>{
            return  res.status(StatusCodes.BAD_REQUEST).json({message : " Please Provide Park Number"})
             
         }
-        let ParkingSpots= await parking.findOne({'location.parkingNumber':ParkingNumber}).select('park location.parkingName')
+        let ParkingSpots= await parking.findOne({'location.parkingNumber':ParkingNumber}).select('park location.parkingName location.Price')
        //console.log(ParkingSpots.park[1]);
     //    let ParkingSpot ;
     //    for (let i in ParkingSpots.park){

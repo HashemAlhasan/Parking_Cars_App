@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { Mongoose, Schema, SchemaTypes, model } from "mongoose";
 
 
 const parkingSchema = new Schema({
@@ -15,7 +15,7 @@ const parkingSchema = new Schema({
         },
         parkingNumber: { type: Number, required: true },
         parkingName: { type: String, required: true },
-        Price: {type:Number ,required: true}
+        Price: {type:Number ,required: false}
     },
     park: [
         {
@@ -23,7 +23,7 @@ const parkingSchema = new Schema({
             filled: { type: Boolean, default: false },
             carNumber: { type: String, default: null },
             bookingEndTime: { type: Date, required: true }
-            UserID :{type : }
+        
 
         }
     ],
