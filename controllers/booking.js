@@ -2,28 +2,35 @@
 import { StatusCodes } from "http-status-codes";
 import Parking from "../modules/parking.js";
 import User from "../modules/users.js";
+import { now } from "mongoose";
 
 
 export const bookingPark = async (req, res) => {
     try {
         const { username, duration,Spot  ,date} = req.body;
-       const newDate = convertTo24HourFormat(date)
-       //console.log(newDate);
-        
+                      
         const parkingName = req.body.parkingName;
+        const now = new Date()
+        /// create a new date object and set time t0 00:00:00
+        let ParkingStartingDate = new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0,0)
+        // convert the time coming from request to 24 hour format
+        const newDate = convertTo24HourFormat(date)
+        // get the hour and minutes
+        let [hour, minute] = newDate.split(':')
+        //heres the catch when you set the hours to 00 it takes the local timeZone GMT-3 hours 
+        // so to put the hours in correct format we add three hours 
+        hour = Number(hour) +3
+      // set The Bookine End Time where it is The starting date added to it the duration
+
+       const BookineEndTime= ParkingStartingDate.setHours(hour + duration,minute)
       
-     //console.log(date);
+   
     
-        
-const [ h, m ] = newDate.split(":");
-const ms = new Date().setHours(h,m);
-console.log(ms);
-const Parkingdate = ms
+    
 
-        //console.log();
-
+        //find the Park based on The Park name
         const parkChoosed = await Parking.findOne({"location.parkingName":parkingName});
-       // console.log(parkChoosed);
+        //we get the user which has the car that have the number of(car Number)
         const user = await User.findOne({ username }).populate('car');
         //console.log(user);
         const    carNumber= user.car.carNumber
@@ -31,20 +38,20 @@ const Parkingdate = ms
         if (!parkChoosed) {
             return res.status(400).json({ message: 'Parking not found' });
         }
-
+            //we get the spot from from end and so we have the choosed park 
          const emptyPark = parkChoosed.park.find(object=>object.parkNumber===Spot ) ;
         
          if (!emptyPark) {
              return res.status(400).json({ message: 'No empty parks available' });
          }
-       //  console.log(Parkingdate);
+
          emptyPark.filled = true;
          emptyPark.carNumber = carNumber;
-         emptyPark.bookingEndTime = new Date(Parkingdate + duration *60*60*1000);
-         console.log(emptyPark.bookingEndTime);
+         emptyPark.bookingEndTime = new Date(BookineEndTime);
+      
 
          await parkChoosed.save();
-        // console.log(duration);
+   
 
          user.bookedPark.parkNumber = emptyPark.parkNumber;
          user.bookedPark.bookingEndTime = emptyPark.bookingEndTime;
@@ -131,17 +138,18 @@ function convertTo24HourFormat(timeString) {
     const [time, period] = timeString.split(' ');
     const [hour, minute] = time.split(':');
     let formattedHour = parseInt(hour);
-    
+   
 
-    if (period === 'PM' &&formattedHour>12) {
+    if (period === 'PM' && formattedHour!=12) {
         formattedHour += 12;
         
     }
     if(period==='AM' && formattedHour==12){
     formattedHour=0
     }
-    console.log(formattedHour);
-
+    //console.log(formattedHour);
+        formattedHour=formattedHour.toString()
+    
     return `${formattedHour}:${minute}`;
 }
 
