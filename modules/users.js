@@ -65,7 +65,8 @@ const userSchema = new Schema({
     },
     bookedPark: {
         parkNumber: { type: Number },
-        bookingEndTime: { type: Date }
+        bookingEndTime: { type: Date },
+        ChoosedParkName: { type: String }
     },
     money: {
         type: Number,
@@ -75,6 +76,10 @@ const userSchema = new Schema({
         type: Number,
         default: 0
     },
+    pro: {
+        type: Boolean,
+        default: false
+    }
 },
     {
         timestamps: true,
