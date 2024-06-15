@@ -2,6 +2,8 @@
 import { StatusCodes } from "http-status-codes";
 import Parking from "../modules/parking.js";
 import User from "../modules/users.js";
+import Cars from "../modules/cars.js"
+import CarProblem from '../modules/CarProblems.js'
 
 
 export const bookingPark = async (req, res) => {
@@ -64,8 +66,11 @@ export const bookingPark = async (req, res) => {
 
 export const bookingRepairPark = async (req, res) => {
     try {
-        const userName = req.params.username
-        const parkNumber = req.body.parkNumber
+       // const userName = req.params.username
+        const {parkNumber, Problem,userName} = req.body
+        
+        
+        
         if (!userName) {
             return res.status(400).json({ message: 'UserName not found' });
 
@@ -74,20 +79,56 @@ export const bookingRepairPark = async (req, res) => {
             return res.status(400).json({ message: 'Park number not found' });
 
         }
-        const user = await User.findOne({ username: userName }).populate('car') // جيب معلومات السيارة هون
+        const user = await User.findOne({ username: userName }).populate({
+            path:'car',
+            model:'Cars',
+               
+        })
+        const car = await Cars.findOne({onerId:user._id})
+        const ProblemInfo= await  CarProblem.findOne({Name:Problem})
+        console.log(ProblemInfo);
+        if(!car ){
+            return res.status(StatusCodes.BAD_REQUEST).json({messasge:"Could'nt Find Car For Specfic Users"})
+        }
+        if(!ProblemInfo){
+            return res.status(StatusCodes.BAD_REQUEST).json({message:"Please Provide A vaild Problem"})
+        }
+       
+        if( ProblemInfo.ProblemType== 'Mechanical'){
+            car.carProblems.Mechanic.push(Problem)
+    
+
+
+        }
+        if( ProblemInfo.ProblemType== 'Electric'){
+            car.carProblems.Electric.push(Problem)
+
+        }
+        await car.save()
+      
+     
+        // جيب معلومات السيارة هون
+        
+        
+        
         if (!user) {
             return res.status(400).json({ message: 'User not found' });
         }
-        const selectedPark = await Parking.findOne({ parkingNumber: parkNumber })
+        const userCar=user.car
+        
+         
+        const selectedPark = await Parking.findOne({ "location.parkingNumber": parkNumber })
         const emptyPark = selectedPark.carRepairPlaces.find(park => !park.filled)
         if (!emptyPark) {
             return res.status(400).json({ message: 'No empty parks available' });
         }
+       // console.log(user);
         emptyPark.filled = true
         emptyPark.carNumber = user.car.carNumber //تاكد من الشغل هون بالحرف
         await emptyPark.save()
-        return res.status(200).json({ carRepairNumber: emptyPark.carRepairNumber })
+        return res.status(200).json({Location:selectedPark.location.parkingName ,Problem:Problem,EstimatedTime:ProblemInfo.duration,Price:ProblemInfo.Price,image:ProblemInfo.image})
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ message: error });
     }
 }
@@ -140,3 +181,4 @@ export const ParkingTimer = async (req, res) => {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred while processing the parking timer.' });
     }
 };
+

@@ -21,6 +21,7 @@ app.use(express.json())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cookieParser())
+app.use(express.static('./public'))
 // app.use(rateLimitRequest)
 // app.use(rateLimitMiddleware);
 app.use('/api/user', user)

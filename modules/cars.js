@@ -24,14 +24,21 @@ const carSchema = new Schema({
             type: String,
             required: true,
             default: 'NO Problems',
-            enum:["Overheating","Flat Tire","Brakes Issues","Car Starter","Steering Issues","Malfunctioning Wipers"]
+           // enum:["Overheating","Flat Tire","Brakes Issues","Car Starter","Steering Issues","Malfunctioning Wipers"]
         }],
         Electric: [{
             type: String,
             required: true,
             default: 'NO Problems'
         }]
+
+    },
+    MechanicalProbmes :{
+        type:[String]
+        
     }
+        
+    
 })
 
 
