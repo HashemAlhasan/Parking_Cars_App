@@ -10,6 +10,7 @@ import helmet from "helmet";
 import  user  from './routes/userRoute.js';
 import  parks  from './routes/parkings.js';
 import problems from './routes/CarProblems.js';
+import Order from './routes/Orders.js'
 import { rateLimitRequest, distributedRateLimitMiddleware, rateLimitMiddleware } from './middleware/rateLimit.js'
 const PORT = process.env.PORT || 3000
 const app = express()
@@ -27,6 +28,7 @@ app.use(express.static('./public'))
 app.use('/api/user', user)
 app.use('/api/parking', parks)
 app.use('/api/problem',problems)
+app.use('/api/orders',Order)
 
 const start = async () => {
     try {

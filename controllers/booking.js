@@ -7,6 +7,10 @@ import CarProblem from '../modules/CarProblems.js'
 import ParkingOrder from "../modules/ParkingOrder.js";
 
 
+import RepairOrder from "../modules/RepairOrder.js";
+
+
+
 export const bookingPark = async (req, res) => {
     try {
         const { username, duration,Spot  ,date} = req.body;
@@ -156,6 +160,15 @@ export const bookingRepairPark = async (req, res) => {
         emptyPark.filled = true
         emptyPark.carNumber = user.car.carNumber //تاكد من الشغل هون بالحرف
         await emptyPark.save()
+        const Order = await RepairOrder.create({
+            userId:user._id,
+            carProblem:ProblemInfo._id,
+            SelectedPark:selectedPark._id
+        })
+        if(!Order){
+            res.status(StatusCodes.BAD_REQUEST).json({message:"Order Didn't Created"})
+        }
+        
         return res.status(200).json({Location:selectedPark.location.parkingName ,Problem:Problem,EstimatedTime:ProblemInfo.duration,Price:ProblemInfo.Price,image:ProblemInfo.image})
     } catch (error) {
         console.log(error);
