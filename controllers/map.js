@@ -20,7 +20,7 @@ export const getParkingLocations = async (req, res) => {
                    // $maxDistance: 10000000000  // Maximum distance in meters (10 km)
                 }
             }
-        }, { parkingName: 1, location: 1,parkingNumber:1 })
+        }, { parkingName: 1, location: 1,parkingNumber:1 ,})
             .lean();
             
             console.log(parkingLocations);

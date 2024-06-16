@@ -4,35 +4,51 @@ import Parking from "../modules/parking.js";
 import User from "../modules/users.js";
 import Cars from "../modules/cars.js"
 import CarProblem from '../modules/CarProblems.js'
+import ParkingOrder from "../modules/ParkingOrder.js";
 
 
 export const bookingPark = async (req, res) => {
     try {
-        const { username, carNumber, duration, Spot, parkingNumber } = req.body;
-
-        if (!username || !carNumber || !duration || !Spot || !parkingNumber) {
-            return res.status(400).json({ message: 'All input required' });
+        const { username, duration,Spot  ,date} = req.body;
+        const parkingName = req.body.parkingName;
+        if(!username || !duration || !Spot || !date){
+            res.status(StatusCodes.BAD_REQUEST).json({message :"All inputs are Required"})
         }
 
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(400).json({ message: 'User not found' });
-        }
+        const now = new Date()
+        /// create a new date object and set time t0 00:00:00
+        let ParkingStartingDate = new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0,0)
+        // convert the time coming from request to 24 hour format
+        const newDate = convertTo24HourFormat(date)
+        // get the hour and minutes
+        let [hour, minute] = newDate.split(':')
+        //heres the catch when you set the hours to 00 it takes the local timeZone GMT-3 hours 
+        // so to put the hours in correct format we add three hours 
+        hour = Number(hour) +3
+      // set The Bookine End Time where it is The starting date added to it the duration
 
-        const parkChoosed = await Parking.findOne({ "location.parkingNumber": parkingNumber }).populate('parkingName');
+       const BookineEndTime= ParkingStartingDate.setHours(hour + duration,minute)
+
+
+        const parkChoosed = await Parking.findOne({ "location.parkingName": parkingName })
         if (!parkChoosed) {
             return res.status(400).json({ message: 'Parking not found' });
         }
+        const user = await User.findOne({ username }).populate('car');
+        //console.log(user);
+        if(!user){
+            res.status(StatusCodes.BAD_GATEWAY).json({message : "user  is not valid pleas check the user name"})
+        }
+        const    carNumber= user.car.carNumber
 
-
-        const emptyPark = parkChoosed.park.find(Spot);
+            const emptyPark = parkChoosed.park.find(object=>object.parkNumber===Spot ) 
         if (!emptyPark) {
             return res.status(400).json({ message: 'No empty parks available' });
         }
 
         emptyPark.filled = true;
         emptyPark.carNumber = carNumber;
-        emptyPark.bookingEndTime = new Date(Date.now() + duration * 60 * 60 * 1000);
+        emptyPark.bookingEndTime = BookineEndTime;
 
         await parkChoosed.save();
 
@@ -42,13 +58,21 @@ export const bookingPark = async (req, res) => {
             chosenParkName: parkChoosed.parkingName
         };
 
-        let paymentAmount = duration * 2500;
+        let paymentAmount = duration * parkChoosed.location.Price;
         // Discount for Pro User
         if (user.pro) {
             paymentAmount *= 0.75;
         }
         user.paymentAmount += paymentAmount;
         await user.save();
+        const ParkOrder = await ParkingOrder.create({
+            userId:user._id,
+            SelectedPark:parkChoosed._id,
+            duration:duration,
+            Price:user.paymentAmount
+
+        })
+        
 
         return res.status(200).json({
             parkNumber: emptyPark.parkNumber,
@@ -68,6 +92,7 @@ export const bookingRepairPark = async (req, res) => {
     try {
        // const userName = req.params.username
         const {parkNumber, Problem,userName} = req.body
+
         
         
         
@@ -79,11 +104,16 @@ export const bookingRepairPark = async (req, res) => {
             return res.status(400).json({ message: 'Park number not found' });
 
         }
+       
+        console.log();
         const user = await User.findOne({ username: userName }).populate({
             path:'car',
             model:'Cars',
                
         })
+        if(!user){
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message:"User Name Not Found "})
+        }
         const car = await Cars.findOne({onerId:user._id})
         const ProblemInfo= await  CarProblem.findOne({Name:Problem})
         console.log(ProblemInfo);
@@ -182,3 +212,21 @@ export const ParkingTimer = async (req, res) => {
     }
 };
 
+function convertTo24HourFormat(timeString) {
+    const [time, period] = timeString.split(' ');
+    const [hour, minute] = time.split(':');
+    let formattedHour = parseInt(hour);
+   
+
+    if (period === 'PM' && formattedHour!=12) {
+        formattedHour += 12;
+        
+    }
+    if(period==='AM' && formattedHour==12){
+    formattedHour=0
+    }
+    //console.log(formattedHour);
+        formattedHour=formattedHour.toString()
+    
+    return `${formattedHour}:${minute}`;
+}

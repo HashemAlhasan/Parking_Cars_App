@@ -116,7 +116,7 @@ export const verifyCode = async (req, res) => {
         if (!validator.isEmail(email)) {
             return res.status(400).json({ message: "Invalid Email" })
         }
-        const user = await User.findOne({ email }).select('verifyEmailCode expirationCodeTime');
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ message: "User not found" });
         }
@@ -138,9 +138,10 @@ export const verifyCode = async (req, res) => {
             if (!updatedUser) {
                 return res.status(404).json({ message: "User not found after update" });
             }
+
             const token = jwt.sign({ email: user.email }, process.env.TOKEN_KEY, { expiresIn: '90d' });
            // res.cookie('token', token, { maxAge: 240 * 60 * 60 * 1000 });
-            return res.status(200).json({ message : 'Code Verifyed',userVerifyed: user.emailVerified, token: token });
+            return res.status(200).json({ message : 'Code Verifyed', token: token ,user:user });
         }
 
     } catch (error) {
