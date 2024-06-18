@@ -1,3 +1,4 @@
+
 import parking from "../modules/parking.js";
 import  {StatusCodes}from 'http-status-codes'
 
@@ -56,6 +57,13 @@ export const  getParkingSpots = async(req,res)=>{
 
           // console.log(ParkingSpots);
      //  await   Object.assign(ParkingSpots,{'hashem':true})
+     //const spot =  Park.park.find(object=>object.parkNumber==user.bookedPark.parkNumber)
+     const spots =ParkingSpots.park.find(object=>object.filled !=true )
+     if(!spots){
+        return res.status(StatusCodes.BAD_REQUEST).json({message:"no empty Spots Availabel in Parking Place"})
+     }
+     
+     console.log(spots);
         return res.status(StatusCodes.OK).json(ParkingSpots)
 
 

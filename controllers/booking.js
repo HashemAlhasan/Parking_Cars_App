@@ -11,6 +11,7 @@ import RepairOrder from "../modules/RepairOrder.js";
 
 
 
+
 export const bookingPark = async (req, res) => {
     try {
         const { username, duration, Spot, date } = req.body;
@@ -39,8 +40,8 @@ export const bookingPark = async (req, res) => {
         }
         const user = await User.findOne({ username }).populate('car');
         //console.log(user);
-        if (!user) {
-            res.status(StatusCodes.BAD_GATEWAY).json({ message: "user  is not valid pleas check the user name" })
+        if(!user){
+            res.status(StatusCodes.BAD_GATEWAY).json({message : "user  is not valid pleas check the user name"})
         }
         const carNumber = user.car.carNumber
 
@@ -54,11 +55,11 @@ export const bookingPark = async (req, res) => {
         emptyPark.bookingEndTime = BookineEndTime;
 
         await parkChoosed.save();
-
+        console.log(parkChoosed.parkingName);
         user.bookedPark = {
             parkNumber: emptyPark.parkNumber,
             bookingEndTime: emptyPark.bookingEndTime,
-            chosenParkName: parkChoosed.parkingName
+            ChoosedParkName: parkingName
         };
 
         let paymentAmount = duration * parkChoosed.location.Price;
@@ -82,7 +83,10 @@ export const bookingPark = async (req, res) => {
             carNumber: emptyPark.carNumber,
             bookingEndTime: emptyPark.bookingEndTime,
             parksNum: user.bookedPark.parkNumber,
-            parkingName: user.bookedPark.parkingName
+            parkingName: parkingName,
+            duration:duration,
+            Price:paymentAmount
+
         });
     } catch (error) {
         console.error('Error booking parking:', error.message);
@@ -223,6 +227,76 @@ export const ParkingTimer = async (req, res) => {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred while processing the parking timer.' });
     }
 };
+export const ExpandParkingTime =async(req,res)=>{
+    const {username ,duration}=req.body
+    if(!username){
+        return res.status(StatusCodes.BAD_REQUEST).json({message:"Please Provide user name"})
+    }
+    const user = await User.findOne({username:username})
+    if(!username){
+        return  res.status(StatusCodes.BAD_REQUEST).json({message : "could'nt Find user "})
+    }
+    user.bookedPark.bookingEndTime=user.bookedPark.bookingEndTime+ (duration*60*60*1000)
+    user.save()
+    const Park= await Parking.findOne({'location.parkingName':user.bookedPark.ChoosedParkName})
+    if(!Park){
+        return res.status(StatusCodes.BAD_REQUEST).json({messgae:"could'nt Find Park"})
+    }
+    const spot =  Park.park.find(object=>object.parkNumber==user.bookedPark.parkNumber)
+        spot.bookingEndTime=user.bookedPark.bookingEndTime+ (duration*60*60*1000)
+        Park.save()
+        const order =await ParkingOrder.findOne({userId:user._id})
+        if(!order){
+            return res.status(StatusCodes.BAD_REQUEST).json({message:"order not found"})
+        }
+        const oldduration=order.duration
+        order.duration= oldduration+duration
+        const oldPrice=order.Price
+        order.Price= oldPrice+ (duration * Park.location.Price)
+        
+        order.save()
+
+    return res.status(StatusCodes.OK).json({message : "Done Sucessfuly "})
+}
+export const HomeParkingTimer = async(req,res)=>{
+//     const {username} =req.body 
+//     if(!username){
+//         return res.status(StatusCodes.BAD_REQUEST).json({message : "Please Provide username"})
+//     }
+//     const user = await User.findOne({username:username})
+//     if(!user){
+//         return res.status(StatusCodes.BAD_REQUEST).json({message : "user not found"})
+//     }
+//     const currentTime=new Date()
+//     let bookingEndTime=user.bookedPark.bookingEndTime.getTime()
+//     let RealTime= currentTime.getTime
+//     console.log("Booking "+bookingEndTime+"     Realtime"+RealTime);
+//     console.log(user.bookedPark.bookingEndTime.getDate());
+//     if(user.bookedPark.bookingEndTime.getDate()>currentTime.getDate()){
+//         bookingEndTime=bookingEndTime + (24*60)
+//     }
+//     const Time = (bookingEndTime/60) -(RealTime/60)
+    // if(Time<=0){
+    //     user.bookedPark.bookingEndTime=null
+    //     user.bookedPark.ChoosedParkName=null
+    //     user.bookedPark.parkNumber=null
+    //     user.save()
+    //     return res.status(StatusCodes.OK).json({message : "Expired"})
+    // }
+
+    
+
+    return res.status(StatusCodes.OK).json({message: "Time"})
+
+
+
+
+
+
+
+}
+
+
 
 function convertTo24HourFormat(timeString) {
     const [time, period] = timeString.split(' ');
