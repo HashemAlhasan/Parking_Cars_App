@@ -13,25 +13,24 @@ import RepairOrder from "../modules/RepairOrder.js";
 
 export const bookingPark = async (req, res) => {
     try {
-        const { username, duration,Spot  ,date} = req.body;
+        const { username, duration, Spot, date } = req.body;
         const parkingName = req.body.parkingName;
-        if(!username || !duration || !Spot || !date){
-            res.status(StatusCodes.BAD_REQUEST).json({message :"All inputs are Required"})
+        if (!username || !duration || !Spot || !date) {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: "All inputs are Required" })
         }
-
         const now = new Date()
         /// create a new date object and set time t0 00:00:00
-        let ParkingStartingDate = new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0,0)
+        let ParkingStartingDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
         // convert the time coming from request to 24 hour format
         const newDate = convertTo24HourFormat(date)
         // get the hour and minutes
         let [hour, minute] = newDate.split(':')
         //heres the catch when you set the hours to 00 it takes the local timeZone GMT-3 hours 
         // so to put the hours in correct format we add three hours 
-        hour = Number(hour) +3
-      // set The Bookine End Time where it is The starting date added to it the duration
+        hour = Number(hour) + 3
+        // set The Bookine End Time where it is The starting date added to it the duration
 
-       const BookineEndTime= ParkingStartingDate.setHours(hour + duration,minute)
+        const BookineEndTime = ParkingStartingDate.setHours(hour + duration, minute)
 
 
         const parkChoosed = await Parking.findOne({ "location.parkingName": parkingName })
@@ -40,12 +39,12 @@ export const bookingPark = async (req, res) => {
         }
         const user = await User.findOne({ username }).populate('car');
         //console.log(user);
-        if(!user){
-            res.status(StatusCodes.BAD_GATEWAY).json({message : "user  is not valid pleas check the user name"})
+        if (!user) {
+            res.status(StatusCodes.BAD_GATEWAY).json({ message: "user  is not valid pleas check the user name" })
         }
-        const    carNumber= user.car.carNumber
+        const carNumber = user.car.carNumber
 
-            const emptyPark = parkChoosed.park.find(object=>object.parkNumber===Spot ) 
+        const emptyPark = parkChoosed.park.find(object => object.parkNumber === Spot)
         if (!emptyPark) {
             return res.status(400).json({ message: 'No empty parks available' });
         }
@@ -70,13 +69,13 @@ export const bookingPark = async (req, res) => {
         user.paymentAmount += paymentAmount;
         await user.save();
         const ParkOrder = await ParkingOrder.create({
-            userId:user._id,
-            SelectedPark:parkChoosed._id,
-            duration:duration,
-            Price:user.paymentAmount
+            userId: user._id,
+            SelectedPark: parkChoosed._id,
+            duration: duration,
+            Price: user.paymentAmount
 
         })
-        
+
 
         return res.status(200).json({
             parkNumber: emptyPark.parkNumber,
@@ -94,12 +93,12 @@ export const bookingPark = async (req, res) => {
 
 export const bookingRepairPark = async (req, res) => {
     try {
-       // const userName = req.params.username
-        const {parkNumber, Problem,userName} = req.body
+        // const userName = req.params.username
+        const { parkNumber, Problem, userName } = req.body
 
-        
-        
-        
+
+
+
         if (!userName) {
             return res.status(400).json({ message: 'UserName not found' });
 
@@ -108,68 +107,68 @@ export const bookingRepairPark = async (req, res) => {
             return res.status(400).json({ message: 'Park number not found' });
 
         }
-       
+
         console.log();
         const user = await User.findOne({ username: userName }).populate({
-            path:'car',
-            model:'Cars',
-               
+            path: 'car',
+            model: 'Cars',
+
         })
-        if(!user){
-            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message:"User Name Not Found "})
+        if (!user) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "User Name Not Found " })
         }
-        const car = await Cars.findOne({onerId:user._id})
-        const ProblemInfo= await  CarProblem.findOne({Name:Problem})
+        const car = await Cars.findOne({ onerId: user._id })
+        const ProblemInfo = await CarProblem.findOne({ Name: Problem })
         console.log(ProblemInfo);
-        if(!car ){
-            return res.status(StatusCodes.BAD_REQUEST).json({messasge:"Could'nt Find Car For Specfic Users"})
+        if (!car) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ messasge: "Could'nt Find Car For Specfic Users" })
         }
-        if(!ProblemInfo){
-            return res.status(StatusCodes.BAD_REQUEST).json({message:"Please Provide A vaild Problem"})
+        if (!ProblemInfo) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Please Provide A vaild Problem" })
         }
-       
-        if( ProblemInfo.ProblemType== 'Mechanical'){
+
+        if (ProblemInfo.ProblemType == 'Mechanical') {
             car.carProblems.Mechanic.push(Problem)
-    
+
 
 
         }
-        if( ProblemInfo.ProblemType== 'Electric'){
+        if (ProblemInfo.ProblemType == 'Electric') {
             car.carProblems.Electric.push(Problem)
 
         }
         await car.save()
-      
-     
+
+
         // جيب معلومات السيارة هون
-        
-        
-        
+
+
+
         if (!user) {
             return res.status(400).json({ message: 'User not found' });
         }
-        const userCar=user.car
-        
-         
+        const userCar = user.car
+
+
         const selectedPark = await Parking.findOne({ "location.parkingNumber": parkNumber })
         const emptyPark = selectedPark.carRepairPlaces.find(park => !park.filled)
         if (!emptyPark) {
             return res.status(400).json({ message: 'No empty parks available' });
         }
-       // console.log(user);
+        // console.log(user);
         emptyPark.filled = true
         emptyPark.carNumber = user.car.carNumber //تاكد من الشغل هون بالحرف
         await emptyPark.save()
         const Order = await RepairOrder.create({
-            userId:user._id,
-            carProblem:ProblemInfo._id,
-            SelectedPark:selectedPark._id
+            userId: user._id,
+            carProblem: ProblemInfo._id,
+            SelectedPark: selectedPark._id
         })
-        if(!Order){
-            res.status(StatusCodes.BAD_REQUEST).json({message:"Order Didn't Created"})
+        if (!Order) {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: "Order Didn't Created" })
         }
-        
-        return res.status(200).json({Location:selectedPark.location.parkingName ,Problem:Problem,EstimatedTime:ProblemInfo.duration,Price:ProblemInfo.Price,image:ProblemInfo.image})
+
+        return res.status(200).json({ Location: selectedPark.location.parkingName, Problem: Problem, EstimatedTime: ProblemInfo.duration, Price: ProblemInfo.Price, image: ProblemInfo.image })
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: error });
@@ -229,17 +228,16 @@ function convertTo24HourFormat(timeString) {
     const [time, period] = timeString.split(' ');
     const [hour, minute] = time.split(':');
     let formattedHour = parseInt(hour);
-   
 
-    if (period === 'PM' && formattedHour!=12) {
+    if (period === 'PM' && formattedHour != 12) {
         formattedHour += 12;
-        
+
     }
-    if(period==='AM' && formattedHour==12){
-    formattedHour=0
+    if (period === 'AM' && formattedHour == 12) {
+        formattedHour = 0
     }
     //console.log(formattedHour);
-        formattedHour=formattedHour.toString()
-    
+    formattedHour = formattedHour.toString()
+
     return `${formattedHour}:${minute}`;
 }
