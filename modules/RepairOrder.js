@@ -1,23 +1,35 @@
 import mongoose, { Schema, model } from "mongoose";
-const RepairOrderSchema=  new Schema({
-    userId : { 
-        type:Schema.ObjectId,
-        ref : 'User',
+const RepairOrderSchema = new Schema({
+    userId: {
+        type: Schema.ObjectId,
+        ref: 'User',
         required: true,
 
     },
-    SelectedPark :{ 
-        type:Schema.ObjectId,
-        ref : 'Parking',
+    SelectedPark: {
+        type: Schema.ObjectId,
+        ref: 'Parking',
         required: true,
 
     },
-    carProblem:{
-        type:Schema.ObjectId,
-        ref : 'CarProblem',
+    carProblem: {
+        type: Schema.ObjectId,
+        ref: 'CarProblem',
         required: true,
-
     },
+    orderStatus: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    orderPrice: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    orderFinishDate: {
+        type: Date,
+    }
 
-},{timestamps:true})
+}, { timestamps: true })
 export default model('RepairOrder', RepairOrderSchema)
