@@ -201,7 +201,7 @@ export const addParking = async (req, res) => {
 
 export const ParkingTimer = async (req, res) => {
     try {
-        const { username } = req.params;
+        const { username } = req.body;
         const user = await User.findOne({ username }).populate('bookedPark');
 
         if (!user) {
