@@ -79,6 +79,10 @@ const userSchema = new Schema({
     pro: {
         type: Boolean,
         default: false
+    },
+    fcmToken:{
+        type:String
+        
     }
 },
     {

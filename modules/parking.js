@@ -18,7 +18,7 @@ const parkingSchema = new Schema({
         Price: {type:Number ,required: false}
     },
     park: [
-        {
+        {   duration:{type:Number , default:0},
             parkNumber: { type: Number, required: true },
             filled: { type: Boolean, default: false },
             carNumber: { type: String, default: null },
