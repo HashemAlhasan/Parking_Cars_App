@@ -8,7 +8,7 @@ import CryptoJS from 'crypto-js';
 import { SendVerifyCode } from '../utils/SendTheCode.js';
 
 export const register = async (req, res,) => {
-    //console.log(req.body);
+
     try {
         const { email, password, confirmPassword, username, firstName, lastName, carNumber, carModel, carType,fcmToken } = req.body
 

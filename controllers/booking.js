@@ -42,8 +42,8 @@ export const bookingPark = async (req, res) => {
         }
         const user = await User.findOne({ username }).populate('car');
         //console.log(user);
-        if(!user){
-            res.status(StatusCodes.BAD_GATEWAY).json({message : "user  is not valid pleas check the user name"})
+        if (!user) {
+            res.status(StatusCodes.BAD_GATEWAY).json({ message: "user  is not valid pleas check the user name" })
         }
        // console.log(user.car);
         const carNumber = user.car.carNumber
@@ -218,6 +218,9 @@ export const ParkingTimer = async (req, res) => {
 
         const { parkNumber, bookingEndTime } = user.bookedPark;
         const parkingName = await Parking.findOne({"location.parkingName":user.bookedPark.ChoosedParkName})
+        if(!parkingName){
+            return res.status(StatusCodes.BAD_REQUEST).json({message : "Yoy have't choosed any aprk yet !!!", hours: 0, minutes: 0, seconds: 0})
+        }
         const park = parkingName.park.find(park => park.parkNumber == parkNumber)
         const duration = park.duration
         const currentTime = new Date();
@@ -229,7 +232,7 @@ export const ParkingTimer = async (req, res) => {
         
         // Check if the parking time hasn't started yet
         if (currentTime < adjustedBookingEndTime) {
-            return res.status(StatusCodes.OK).json({ message: 'Parking Time Hasn\'t Started Yet' });
+            return res.status(StatusCodes.OK).json({ message: 'Parking Time Hasn\'t Started Yet' , hours: 0, minutes: 0, seconds: 0});
         }
 
         // Check if the parking time has ended
@@ -244,7 +247,7 @@ export const ParkingTimer = async (req, res) => {
             // await parkingName.save()
 
 
-            return res.status(StatusCodes.OK).json({ message: 'Parking Time Has Ended' });
+            return res.status(StatusCodes.OK).json({ message: 'Parking Time Has Ended', hours: 0, minutes: 0, seconds: 0 });
         }
 
         // Calculate the remaining time in milliseconds
@@ -263,14 +266,14 @@ export const ParkingTimer = async (req, res) => {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred while processing the parking timer.' });
     }
 };
-export const ExpandParkingTime =async(req,res)=>{
-    const {username ,duration}=req.body
-    if(!username){
-        return res.status(StatusCodes.BAD_REQUEST).json({message:"Please Provide user name"})
+export const ExpandParkingTime = async (req, res) => {
+    const { username, duration } = req.body
+    if (!username) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: "Please Provide user name" })
     }
-    const user = await User.findOne({username:username})
-    if(!username){
-        return  res.status(StatusCodes.BAD_REQUEST).json({message : "could'nt Find user "})
+    const user = await User.findOne({ username: username })
+    if (!username) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: "could'nt Find user " })
     }
     // let bookingEndTime  = user.bookedPark.bookingEndTime
     // let newBookingEndDate= new Date(bookingEndTime.getTime()+ duration*60*60*1000)
@@ -297,7 +300,7 @@ export const ExpandParkingTime =async(req,res)=>{
         
         order.save()
 
-    return res.status(StatusCodes.OK).json({message : "Done Sucessfuly "})
+    return res.status(StatusCodes.OK).json({ message: "Done Sucessfuly " })
 }
 // export const HomeParkingTimer = async(req,res)=>{
 //     const {username} =req.body 
@@ -325,7 +328,7 @@ export const ExpandParkingTime =async(req,res)=>{
     //     return res.status(StatusCodes.OK).json({message : "Expired"})
     // }
 
-    
+
 
     // return res.status(StatusCodes.OK).json({message: "Time"})
 

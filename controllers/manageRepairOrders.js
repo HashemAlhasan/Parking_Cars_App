@@ -11,11 +11,12 @@ export const allRepairOrdersList = async (req, res) => {
         const repairList = await RepairOrder.find({})
         .sort({ createrAt: -1 })
         .populate({ path: 'carProblem', model: 'CarProblem' })
-        .populate({ path: 'userId', model: 'User' ,select:"username"})
+        .populate({ path: 'userId', model: 'User' ,select:"email firstName lastName"})
         .populate({ path: 'SelectedPark', model: 'Parking' ,select :"location.parkingName"});
         if (!repairList) {
             return res.status(400).json({ message: 'There is no repair orders to show' });
         }
+        console.log(repairList);
         return res.status(200).json(repairList);
     } catch (error) {
         console.log(error);
@@ -34,7 +35,7 @@ export const deleteRepairOrder = async (req, res) => {
         if (!deleteRepairOrder) {
             return res.status(400).json({ message: 'The order can not found' });
         }
-        return res.status(200).json({ message: ` was deleted succesfully` });
+        return res.status(200).json({ message: deleteRepairOrder });
     } catch (error) {
         return res.status(StatusCodes.BAD_REQUEST).json({ message: "Internal Server Error" });
     }
@@ -42,34 +43,35 @@ export const deleteRepairOrder = async (req, res) => {
 
 export const updateRepairOrderStatuse = async (req, res) => {
     try {
-        const { userId, price, date } = req.body;  // Add fcmToken to the request body
-        if (!userId) {
-            return res.status(400).json({ message: "userId not found" });
+        const { orderId, price, date } = req.body;  // Add fcmToken to the request body
+        if (!orderId) {
+            return res.status(400).json({ message: "orderId not found" });
         }
         if (!price || !date) {
             return res.status(400).json({ message: "Please provide price and date" });
         }
-        const user =await User.findById(userId)
-        if(!user){
-            return res.status(StatusCodes.BAD_REQUEST).json({message:`user hasn't been found`})
-        }
-        const fcmToken= user.fcmToken
         
-        
+   
         const repairOrder = await RepairOrder.findOneAndUpdate(
-            { userId },
+            {_id:orderId },
             {
                 orderStatus: true,
                 orderPrice: price,
                 orderFinishDate: date,
             },
             { new: true }
-        );
-
-        if (!repairOrder) {
-            return res.status(400).json({ message: 'The order cannot be found' });
-        }
-
+            ).populate("userId");
+            console.log(repairOrder);
+            if (!repairOrder) {
+                return res.status(400).json({ message: 'The order cannot be found' });
+            }
+            const userId=repairOrder.userId
+            
+            const user =await User.findById(userId)
+            if(!user){
+                return res.status(StatusCodes.BAD_REQUEST).json({message:`user hasn't been found`})
+            }
+            const fcmToken= user.fcmToken
         // await repairOrder.save();
 
         // Store notification in the database
