@@ -1,8 +1,13 @@
+import { ObjectId } from "mongodb";
 import mongoose, { Mongoose, Schema, SchemaTypes, model } from "mongoose";
 
 
 const parkingSchema = new Schema({
-   
+    Admin: {
+        adminNumber: ObjectId,
+        required: true,
+        ref: 'Admin'
+    },
     location: {
         type: {
             type: String,
@@ -15,7 +20,7 @@ const parkingSchema = new Schema({
         },
         parkingNumber: { type: Number, required: true },
         parkingName: { type: String, required: true },
-        Price: {type:Number ,required: false}
+        Price: { type: Number, required: false }
     },
     park: [
         {
@@ -23,7 +28,7 @@ const parkingSchema = new Schema({
             filled: { type: Boolean, default: false },
             carNumber: { type: String, default: null },
             bookingEndTime: { type: Date, required: true }
-        
+
 
         }
     ],
