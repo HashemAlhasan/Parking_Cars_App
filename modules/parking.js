@@ -3,11 +3,11 @@ import mongoose, { Mongoose, Schema, SchemaTypes, model } from "mongoose";
 
 
 const parkingSchema = new Schema({
-    Admin: {
-        type: ObjectId,
-        required: true,
-        ref: 'Admin'
-    },
+    // Admin: {
+    //     type: ObjectId,
+    //     required: true,
+    //     ref: 'Admin'
+    // },
     location: {
         type: {
             type: String,

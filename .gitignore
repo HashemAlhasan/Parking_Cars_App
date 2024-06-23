@@ -1,2 +1,4 @@
 /node_modules
 /.env
+utils/sendNotifications.js
+/fir-e8b4f-firebase-adminsdk-7jn1h-1d173a25b7.json

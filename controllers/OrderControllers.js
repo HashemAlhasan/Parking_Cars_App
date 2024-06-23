@@ -6,7 +6,7 @@ export const getAllParkingOrders = async (req, res) => {
     try {
         const { username } = req.body
         if (!username) {
-            res.status(StatusCodes.BAD_REQUEST).json({ message: "Please Provide User Name" })
+           return res.status(StatusCodes.BAD_REQUEST).json({ message: "Please Provide User Name" })
         }
         const user = await User.findOne({ username: username })
         if (!user) {

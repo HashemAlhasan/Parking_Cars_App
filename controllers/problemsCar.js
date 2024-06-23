@@ -10,6 +10,9 @@ export const selectProblem = async (req, res) => {
     try {
         const user = await User.findOne({ username: req.body.username }).populate('car')
         //console.log(user);
+        if(!user){
+            return res.status(StatusCodes.BAD_REQUEST).json({message:"Cannot fond user"})
+        }
         const userCar = user.car
 
       //  console.log(user);
