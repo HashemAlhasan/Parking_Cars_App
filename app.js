@@ -31,8 +31,8 @@ app.use(express.static('./public'))
 // app.use(rateLimitMiddleware);
 app.use('/api/user', user)
 app.use('/api/parking', parks)
-app.use('/api/problem',problems)
-app.use('/api/orders',Order)
+app.use('/api/problem', problems)
+app.use('/api/orders', Order)
 
 server.listen(PORT, async () => {
     console.log(`Server is listening on port: ${PORT}...`)
@@ -42,6 +42,6 @@ server.listen(PORT, async () => {
         console.error("Error connecting to database:", error)
         // Handle the error appropriately (e.g., stop the server)
     }
-}
+})
 
 export default io;
