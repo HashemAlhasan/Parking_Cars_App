@@ -6,7 +6,7 @@ import Cars from "../modules/cars.js"
 import CarProblem from '../modules/CarProblems.js'
 import ParkingOrder from "../modules/ParkingOrder.js";
 
-
+import io from "../app.js";
 import RepairOrder from "../modules/RepairOrder.js";
 
 
@@ -62,6 +62,11 @@ export const bookingPark = async (req, res) => {
             ChoosedParkName: parkingName
         };
 
+
+        const bookedParkAdmin = parkChoosed.Admin;
+
+
+        // Payment Function
         let paymentAmount = duration * parkChoosed.location.Price;
         // Discount for Pro User
         if (user.pro) {
@@ -74,8 +79,26 @@ export const bookingPark = async (req, res) => {
             SelectedPark: parkChoosed._id,
             duration: duration,
             Price: user.paymentAmount
+        });
 
-        })
+
+        if (!bookedParkAdmin) {
+            console.warn(`No admin found for park ${parkingName}`);
+            // Handle the case where no admin is connected (optional)
+            return res.status(StatusCodes.OK).json({ message: 'Booking successful!' }); // Assuming booking proceeds
+        }
+        const userBookingData = {
+            username,
+            carNumber,
+            parkNumber: emptyPark.parkNumber,
+            bookingEndTime: convertTo24HourFormat(emptyPark.bookingEndTime.toString()),
+        };
+        if (bookedParkAdmin && bookedParkAdmin.socketId) {
+            io.to(bookedParkAdmin.socketId).emit('newBooking', userBookingData);
+        } else {
+            console.warn(`Admin for park ${parkingName} has no socket ID`);
+            // Handle the case where admin's socket ID is unavailable (optional)
+        }
 
 
         return res.status(200).json({
@@ -86,7 +109,6 @@ export const bookingPark = async (req, res) => {
             parkingName: parkingName,
             duration: duration,
             Price: paymentAmount
-
         });
     } catch (error) {
         console.error('Error booking parking:', error.message);

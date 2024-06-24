@@ -2,20 +2,24 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
 dotenv.config()
+import { createServer } from "http";
+import { Server } from "socket.io";
 import connectDB from './db/db.js'
 import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import helmet from "helmet";
-import  user  from './routes/userRoute.js';
-import  parks  from './routes/parkings.js';
+import user from './routes/userRoute.js';
+import parks from './routes/parkings.js';
 import problems from './routes/CarProblems.js';
-import Order from './routes/Orders.js'
-import admin from 'firebase-admin'
+import Order from './routes/Orders.js';
+import { Admin } from './modules/Admins.js'
+// import admin from 'firebase-admin'
 import { rateLimitRequest, distributedRateLimitMiddleware, rateLimitMiddleware } from './middleware/rateLimit.js'
 const PORT = process.env.PORT || 3000
 const app = express()
-
+const server = createServer(app);
+const io = new Server(server)
 app.use(cors())
 app.use(helmet())
 app.use(morgan('dev'))
@@ -28,16 +32,25 @@ app.use(express.static('./public'))
 // app.use(rateLimitMiddleware);
 app.use('/api/user', user)
 app.use('/api/parking', parks)
-app.use('/api/problem',problems)
-app.use('/api/orders',Order)
+app.use('/api/problem', problems)
+app.use('/api/orders', Order)
 
-const start = async () => {
+
+io.on('connection', (socket) => {
+    console.log('Client connected');
+    });
+
+
+server.listen(PORT, async () => {
+    console.log(`Server is listening on port: ${PORT}...`)
     try {
-        app.listen(PORT, () => console.log(`Server is listening on port: ${PORT}...`))
         await connectDB(process.env.MONGO_URI)
-    } catch (err) {
-        console.log(err)
+    } catch (error) {
+        console.error("Error connecting to database:", error)
+        // Handle the error appropriately (e.g., stop the server)
     }
-}
+})
 
-start()
+
+
+export default io;

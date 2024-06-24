@@ -4,7 +4,7 @@ import mongoose, { Mongoose, Schema, SchemaTypes, model } from "mongoose";
 
 const parkingSchema = new Schema({
     Admin: {
-        adminNumber: ObjectId,
+        type: ObjectId,
         required: true,
         ref: 'Admin'
     },
