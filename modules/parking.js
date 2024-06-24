@@ -4,7 +4,7 @@ import mongoose, { Mongoose, Schema, SchemaTypes, model } from "mongoose";
 
 const parkingSchema = new Schema({
     Admin: {
-        type: ObjectId,
+        adminNumber: ObjectId,
         required: true,
         ref: 'Admin'
     },
@@ -23,7 +23,7 @@ const parkingSchema = new Schema({
         Price: { type: Number, required: false }
     },
     park: [
-        {
+        {   duration:{type:Number , default:0},
             parkNumber: { type: Number, required: true },
             filled: { type: Boolean, default: false },
             carNumber: { type: String, default: null },

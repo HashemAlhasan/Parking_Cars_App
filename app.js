@@ -12,9 +12,8 @@ import helmet from "helmet";
 import user from './routes/userRoute.js';
 import parks from './routes/parkings.js';
 import problems from './routes/CarProblems.js';
-import Order from './routes/Orders.js';
-import { Admin } from './modules/Admins.js'
-// import admin from 'firebase-admin'
+import Order from './routes/Orders.js'
+import admin from 'firebase-admin'
 import { rateLimitRequest, distributedRateLimitMiddleware, rateLimitMiddleware } from './middleware/rateLimit.js'
 const PORT = process.env.PORT || 3000
 const app = express()
@@ -32,14 +31,8 @@ app.use(express.static('./public'))
 // app.use(rateLimitMiddleware);
 app.use('/api/user', user)
 app.use('/api/parking', parks)
-app.use('/api/problem', problems)
-app.use('/api/orders', Order)
-
-
-io.on('connection', (socket) => {
-    console.log('Client connected');
-    });
-
+app.use('/api/problem',problems)
+app.use('/api/orders',Order)
 
 server.listen(PORT, async () => {
     console.log(`Server is listening on port: ${PORT}...`)
@@ -49,8 +42,6 @@ server.listen(PORT, async () => {
         console.error("Error connecting to database:", error)
         // Handle the error appropriately (e.g., stop the server)
     }
-})
-
-
+}
 
 export default io;

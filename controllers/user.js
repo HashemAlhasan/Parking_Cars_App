@@ -10,7 +10,8 @@ import { SendVerifyCode } from '../utils/SendTheCode.js';
 export const register = async (req, res,) => {
 
     try {
-        const { email, password, confirmPassword, username, firstName, lastName, carNumber, carModel, carType } = req.body
+        const { email, password, confirmPassword, username, firstName, lastName, carNumber, carModel, carType,fcmToken } = req.body
+
         if (!(email && password && username && firstName && lastName && carNumber && carModel && carType)) {
             return res.status(400).send("All input is required");
         }
@@ -45,7 +46,8 @@ export const register = async (req, res,) => {
             password: encryptedPassword,
             username: username,
             firstName: firstName,
-            lastName: lastName
+            lastName: lastName,
+            fcmToken:fcmToken
         })
         const newUserCar = await Cars.create({
             onerId: newUser._id,

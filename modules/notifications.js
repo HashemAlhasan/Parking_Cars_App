@@ -20,4 +20,4 @@ const NotificationSchema = new Schema({
     }
 })
 
-export default Notification = model('Notification', NotificationSchema)
+export default  model('Notification', NotificationSchema)
