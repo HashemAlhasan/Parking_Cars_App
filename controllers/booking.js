@@ -8,7 +8,7 @@ import ParkingOrder from "../modules/ParkingOrder.js";
 //import * as service from '../fir-e8b4f-firebase-adminsdk-7jn1h-1d173a25b7.json' with {type}
 //const s=JSON.parse(service)
 
-
+import io from "../app.js";
 import RepairOrder from "../modules/RepairOrder.js";
 
 
@@ -80,7 +80,12 @@ export const bookingPark = async (req, res) => {
             Price: user.paymentAmount
 
         })
-
+        // if (bookedParkAdmin && bookedParkAdmin.socketId) {
+        //     io.to(bookedParkAdmin.socketId).emit('newBooking', userBookingData);
+        // } else {
+        //     console.warn(`Admin for park ${parkingName} has no socket ID`);
+        //     // Handle the case where admin's socket ID is unavailable (optional)
+        // }
 
         return res.status(200).json({
             parkNumber: emptyPark.parkNumber,
@@ -106,7 +111,7 @@ export const bookingRepairPark = async (req, res) => {
 
 
 
-
+        
         if (!userName) {
             return res.status(400).json({ message: 'UserName not found' });
 
@@ -213,7 +218,7 @@ export const ParkingTimer = async (req, res) => {
         const user = await User.findOne({ username }).populate('bookedPark');
 
         if (!user) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'No active parking booking found for this user.' });
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'No active parking booking found for this user.' ,hours: 0, minutes: 0, seconds: 0});
         }
 
         const { parkNumber, bookingEndTime } = user.bookedPark;
@@ -275,8 +280,11 @@ export const ExpandParkingTime = async (req, res) => {
     if (!username) {
         return res.status(StatusCodes.BAD_REQUEST).json({ message: "could'nt Find user " })
     }
-    // let bookingEndTime  = user.bookedPark.bookingEndTime
-    // let newBookingEndDate= new Date(bookingEndTime.getTime()+ duration*60*60*1000)
+    if(!user.bookedPark){
+        return res.status(StatusCodes.OK).json({message:"You have'nt booked any park yet "})
+    }
+    let bookingEndTime  = user.bookedPark.bookingEndTime
+    let newBookingEndDate= new Date(bookingEndTime.getTime()+ duration*60*60*1000)
 
      user.bookedPark.bookingEndTime=user.bookedPark.bookingEndTime.getTime()+ (duration*60*60*1000)
     

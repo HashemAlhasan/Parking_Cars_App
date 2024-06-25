@@ -5,6 +5,8 @@ import nodemailer, { createTransport } from 'nodemailer'
 import bcrypt from 'bcryptjs'
 import validator from 'validator'
 import CryptoJS from 'crypto-js';
+import { StatusCodes } from "http-status-codes";
+
 import { SendVerifyCode } from '../utils/SendTheCode.js';
 
 export const register = async (req, res,) => {
@@ -75,7 +77,7 @@ export const login = async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ msg: "Please provide email and password to login" });
         }
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).populate('car' , 'carModel carType carNumber');
         if (!user) {
             return res.status(400).json({ message: "Password or email may be incorrect" });
         }
@@ -116,7 +118,7 @@ export const verifyCode = async (req, res) => {
         if (!validator.isEmail(email)) {
             return res.status(400).json({ message: "Invalid Email" })
         }
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).populate('car' , 'carModel carType carNumber');
         if (!user) {
             return res.status(400).json({ message: "User not found" });
         }
@@ -284,4 +286,32 @@ export const sendEmail = async (email, subject, message) => {
         console.log(error);
         throw new Error(error)
     }
+}
+export const UpdateUser= async(req,res)=>{
+  try {  const {username, newusername,carNumber ,carModel ,carType}=req.body
+  if(!username){
+      return res.status(StatusCodes.BAD_REQUEST).json({message :"Please send user name"})
+  }
+  const user =await User.findOne({username:username}).populate('car' ,'carNumber carModel carType')
+  if(!user){
+      return res.status(StatusCodes.BAD_REQUEST).json({message :`Cannot find user ${username}`})
+  }
+  user.username=newusername
+  user.save()
+  const UserCar = await Cars.findOne({onerId:user._id})
+  if(!UserCar){
+      return res.status(StatusCodes.BAD_REQUEST).json({message : "Cannot find Specified Car for this user"})
+  }
+  UserCar.carModel=carModel,
+  UserCar.carNumber=carNumber,
+  UserCar.carType=carType
+  UserCar.save()
+
+  return res.status(StatusCodes.OK).json({message:user})
+    
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message : `and error occured : ${error}`})
+    
+  }
 }
