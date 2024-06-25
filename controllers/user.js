@@ -288,15 +288,18 @@ export const sendEmail = async (email, subject, message) => {
     }
 }
 export const UpdateUser= async(req,res)=>{
-  try {  const {username, newusername,carNumber ,carModel ,carType}=req.body
-  if(!username){
-      return res.status(StatusCodes.BAD_REQUEST).json({message :"Please send user name"})
+  try {  const {username,firstName,lastName, newusername,carNumber ,carModel ,carType}=req.body
+  if(!username || firstName || lastName || newusername || carNumber || carModel || carType ){
+      return res.status(StatusCodes.BAD_REQUEST).json({message :"Please send Full info "})
   }
   const user =await User.findOne({username:username}).populate('car' ,'carNumber carModel carType')
   if(!user){
       return res.status(StatusCodes.BAD_REQUEST).json({message :`Cannot find user ${username}`})
   }
   user.username=newusername
+user.firstName=firstName
+user.lastName=lastName
+
   user.save()
   const UserCar = await Cars.findOne({onerId:user._id})
   if(!UserCar){

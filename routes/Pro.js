@@ -1,5 +1,6 @@
 import {Router} from 'express'
-import {ProSubscribtion} from '../controllers/Pro.js'
+import {ProSubscribtion , UserPro} from '../controllers/Pro.js'
 const router =Router()
 router.route('/').post(ProSubscribtion)
+router.route('/getPro').post(UserPro)
 export default router
