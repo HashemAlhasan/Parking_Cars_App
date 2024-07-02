@@ -7,9 +7,11 @@ import CarProblem from '../modules/CarProblems.js'
 import ParkingOrder from "../modules/ParkingOrder.js";
 //import * as service from '../fir-e8b4f-firebase-adminsdk-7jn1h-1d173a25b7.json' with {type}
 //const s=JSON.parse(service)
+import Admin from '../modules/Admins.js'
 
 import io from "../app.js";
 import RepairOrder from "../modules/RepairOrder.js";
+import {getUsers} from '../app.js'
 
 
 
@@ -19,7 +21,7 @@ export const bookingPark = async (req, res) => {
         const { username, duration, Spot, date } = req.body;
         const parkingName = req.body.parkingName;
         if (!username || !duration || !Spot || !date) {
-            res.status(StatusCodes.BAD_REQUEST).json({ message: "All inputs are Required" })
+           return  res.status(StatusCodes.BAD_REQUEST).json({ message: "All inputs are Required" })
         }
         const now = new Date()
         /// create a new date object and set time t0 00:00:00
@@ -36,14 +38,14 @@ export const bookingPark = async (req, res) => {
         const BookineEndTime = ParkingStartingDate.setHours(hour + duration, minute)
 
 
-        const parkChoosed = await Parking.findOne({ "location.parkingName": parkingName })
+        const parkChoosed = await Parking.findOne({ "location.parkingName": parkingName }).populate('Admin')
         if (!parkChoosed) {
             return res.status(400).json({ message: 'Parking not found' });
         }
         const user = await User.findOne({ username }).populate('car');
         //console.log(user);
         if (!user) {
-            res.status(StatusCodes.BAD_GATEWAY).json({ message: "user  is not valid pleas check the user name" })
+           return res.status(StatusCodes.BAD_GATEWAY).json({ message: "user  is not valid pleas check the user name" })
         }
        // console.log(user.car);
         const carNumber = user.car.carNumber
@@ -80,13 +82,26 @@ export const bookingPark = async (req, res) => {
             Price: user.paymentAmount
 
         })
+         await ParkOrder.populate('userId','email firstName lastName')
+         await ParkOrder.populate('SelectedPark','location.parkingName')
+       // populate('userId', 'email firstName lastName').populate('SelectedPark', 'location.Price location.parkingName')
+        //
         // if (bookedParkAdmin && bookedParkAdmin.socketId) {
         //     io.to(bookedParkAdmin.socketId).emit('newBooking', userBookingData);
         // } else {
         //     console.warn(`Admin for park ${parkingName} has no socket ID`);
         //     // Handle the case where admin's socket ID is unavailable (optional)
-        // }
+        // // }
+        //     io.to(socketid1()).emit('hi',user,()=>{
+        //         console.log("sent sucessfuly");
+        //     })
+        let u=getUsers()
+        console.log(u);
 
+        const Adminname =parkChoosed.Admin.username
+        let socketId= u.find(user=>user.user==Adminname)
+       io.to(socketId.id).emit('add',ParkOrder)
+      
         return res.status(200).json({
             parkNumber: emptyPark.parkNumber,
             carNumber: emptyPark.carNumber,
@@ -183,7 +198,7 @@ export const bookingRepairPark = async (req, res) => {
 
         })
         if (!Order) {
-            res.status(StatusCodes.BAD_REQUEST).json({ message: "Order Didn't Created" })
+           return  res.status(StatusCodes.BAD_REQUEST).json({ message: "Order Didn't Created" })
         }
 
         return res.status(200).json({ Location: selectedPark.location.parkingName, Problem: Problem, EstimatedTime: ProblemInfo.duration, Price: ProblemInfo.Price, image: ProblemInfo.image })
@@ -197,8 +212,14 @@ export const bookingRepairPark = async (req, res) => {
 
 export const addParking = async (req, res) => {
     try {
-        const { parkingNumber, parkingName, location, park, carRepairPlaces, Price } = req.body;
+        const { parkingNumber, parkingName, location, park, carRepairPlaces, Price ,AdminEmail} = req.body;
+        const AdminId = await Admin.findOne({email:AdminEmail})
+        if(!AdminId){
+            return res.status(StatusCodes.BAD_REQUEST).json({message:"admin Not Found"})
+        }
+        console.log(AdminId);
         const newParking = await Parking.create({
+            Admin:AdminId._id,
             parkingNumber: parkingNumber,
             parkingName: parkingName,
             location: location,

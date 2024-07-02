@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { addParking,bookingPark,ParkingTimer,ExpandParkingTime ,bookingRepairPark} from "../controllers/booking.js";
 import { getParkingLocations,getParkingSpots } from '../controllers/map.js'
-import {qrcodeGenerator} from '../controllers/QrCode.js'
+import {qrcodeGenerator,getQrParkingSpots} from '../controllers/QrCode.js'
 const router = Router();
 
 
@@ -12,6 +12,7 @@ router.route('/getParkingSpots').post(getParkingSpots)
 router.route('/ParkingTimer').post(ParkingTimer)
 router.route('/expandParkingTime').post(ExpandParkingTime)
 router.route('/HomeParkingTimer').post(ParkingTimer)
+router.route('/getSpotBycode').post(getQrParkingSpots)
 router.route('/generateqrcode/:id').get(qrcodeGenerator)
 
 

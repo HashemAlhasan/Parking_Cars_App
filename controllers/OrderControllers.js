@@ -32,7 +32,7 @@ export const getAllRepairOrders = async (req, res) => {
         }
         const user = await User.findOne({ username: username })
         if (!user) {
-            res.status(StatusCodes.BAD_REQUEST).json({ message: "User Not Found" })
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "User Not Found" })
         }
         const orders = await RepairOrder.
             find({ userId: user._id }).

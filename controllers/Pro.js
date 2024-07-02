@@ -8,7 +8,7 @@ export const ProSubscribtion = async(req,res)=>{
     } catch (error) {
         
     }
-    return res.status(StatusCodes.OK).json({message : "Pro"})
+    return res.status(StatusCodes.OK).json({pro : pro})
 }
 export const UserPro = async(req,res)=>{
     try {
@@ -22,7 +22,7 @@ export const UserPro = async(req,res)=>{
         }
         user.pro=true
         await user.save()
-        return res.status(StatusCodes.OK).json({message:"Pro Subs"})
+        return res.status(StatusCodes.OK).json({message:"you have becam a pro user"})
     } catch (error) {
         console.log(error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message: "internal server error"})
