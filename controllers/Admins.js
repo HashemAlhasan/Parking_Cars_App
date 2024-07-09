@@ -1,5 +1,7 @@
 import Admin from "../modules/Admins.js";
 import parking from "../modules/parking.js";
+import validator from 'validator'
+import bcrypt from 'bcryptjs'
 
 export const registerAdmin = async (req, res,) => {
     try {

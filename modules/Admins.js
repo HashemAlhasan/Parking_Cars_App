@@ -29,7 +29,13 @@ const AdminSchema = new Schema({
         type: Number,
         required: true,
         ref: 'Parking'
+    },
+    username:{
+        type:String,
+        required:true,
+        
     }
+    
 })
 
 export default model('Admin', AdminSchema)

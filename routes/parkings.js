@@ -1,18 +1,20 @@
 import { Router } from "express";
-import { addParking,bookingPark,ParkingTimer,ExpandParkingTime ,bookingRepairPark} from "../controllers/booking.js";
-import { getParkingLocations,getParkingSpots } from '../controllers/map.js'
-import {qrcodeGenerator} from '../controllers/QrCode.js'
+import { addParking, bookingPark, ParkingTimer, ExpandParkingTime, bookingRepairPark } from "../controllers/booking.js";
+import { getParkingLocations, getParkingSpots } from '../controllers/map.js'
+import { qrcodeGenerator, getQrParkingSpots } from '../controllers/QrCode.js'
+import { verifyToken } from '../middleware/verifyToken.js'
 const router = Router();
 
 
-router.route('/bookingPark').post(bookingPark)
-router.route('/addparking').post(addParking)
-router.route('/getclosestpark').post(getParkingLocations)
-router.route('/getParkingSpots').post(getParkingSpots)
-router.route('/ParkingTimer').get(ParkingTimer)
-router.route('/expandParkingTime').post(ExpandParkingTime)
-router.route('/HomeParkingTimer').post(ParkingTimer)
-router.route('/generateqrcode/:id').get(qrcodeGenerator)
+router.route('/bookingPark').post(verifyToken, bookingPark)
+router.route('/addparking').post(verifyToken, addParking)
+router.route('/getclosestpark').post(verifyToken, getParkingLocations)
+router.route('/getParkingSpots').post(verifyToken, getParkingSpots)
+router.route('/ParkingTimer').post(verifyToken, ParkingTimer)
+router.route('/expandParkingTime').post(verifyToken, ExpandParkingTime)
+router.route('/HomeParkingTimer').post(verifyToken, ParkingTimer)
+router.route('/getSpotBycode').post(verifyToken, getQrParkingSpots)
+router.route('/generateqrcode/:id').get(verifyToken, qrcodeGenerator)
 
 
 

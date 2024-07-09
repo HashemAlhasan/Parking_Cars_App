@@ -21,6 +21,7 @@ export const verifyToken = async (req, res, next) => {
         if (!user) {
             return res.status(400).json({ message: "User not found" });
         }
+        req.user = { username: user.username }
         next();
     } catch (error) {
         res.status(400).json({ message: "Unauthorized", error: error });
@@ -44,6 +45,8 @@ export const VerificationCode = async (req, res) => {
         next()
     } catch (error) {
         return res.status(400).json({ msg: "an error in middel ware" })
+
+
 
     }
 }
