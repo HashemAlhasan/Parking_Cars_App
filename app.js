@@ -38,21 +38,44 @@ const io = new Server(server)
        
        const ParkingAdminOrders = await  getParkingOrders(data.username)
       
-       console.log(ParkingAdminOrders);
+      // console.log(ParkingAdminOrders);
         socket.emit("getall",ParkingAdminOrders)
 
     })
 })
 const getParkingOrders =async(username)=>{
-    const adminid= await Admin.findOne({username:username})
-    console.log(adminid);
-    const ParkingAdminOrders =await ParkingOrder.find({}).populate('SelectedPark','location.parkingName').populate('userId','email firstName lastName')
-    const ParkingAdminOrders1= await ParkingAdminOrders.find(order=> order.SelectedPark.Admin===adminid._id)
+    //First we ind the Admin which is connectd
+    const admin= await Admin.findOne({username:username})
+    //console.log(adminid);
+    //FindAllParkingOrders
+    const ParkingAdminOrders =await ParkingOrder.find({}).populate('SelectedPark','location.parkingName Admin').populate('userId','email firstName lastName bookedPark.bookingEndTime')
+    .lean().sort({"userId.bookedPark.bookingEndTime":-1})
+   // console.log(ParkingAdminOrders);
+   //add Finish Date Field 
+    const ParkingAdminOrdersWithOrderFinsihDate=  await ParkingAdminOrders.map(doc=>{
+        if (doc.userId && doc.userId.bookedPark && doc.userId.bookedPark.bookingEndTime) {
+          doc.orderFinishDate=doc.userId.bookedPark.bookingEndTime
+      //   delete doc.userId.bookedPark.bookingEndTime;
+
+        }
+       
+         return doc
+    })
+    //Delete The Booked Park Object because its empty
+    const ParkingAdminOrdersWithoutBookedParkObject =await ParkingAdminOrdersWithOrderFinsihDate.map(doc=>{
+        delete doc.userId.bookedPark
+        return doc
+    })
+    //console.log(ParkingAdminOrdersWithoutBookedParkObject);
+    //Find the orders which Park is belonged to admin
+    const ParkingAdminOrdersResult= await ParkingAdminOrdersWithoutBookedParkObject.find(order=> order.SelectedPark.Admin.toString()===admin._id.toString())
 
 
-    console.log(ParkingAdminOrders1);
-  return ParkingAdminOrders
+    //console.log(ParkingAdminOrders1);
+    
+  return ParkingAdminOrdersResult
 }
+
 function addUser(userName, id) {
     // Check if the user already exists in the list
     const existingUser = Users.find(user => user.user === userName);

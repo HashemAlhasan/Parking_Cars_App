@@ -82,8 +82,14 @@ export const bookingPark = async (req, res) => {
             Price: user.paymentAmount
 
         })
-         await ParkOrder.populate('userId','email firstName lastName')
+         await ParkOrder.populate('userId','email firstName lastName bookedPark.bookingEndTime')
          await ParkOrder.populate('SelectedPark','location.parkingName')
+         const ParkingOrder2 = await ParkingOrder.findOne({_id:ParkOrder._id})
+          .populate('userId','email firstName lastName bookedPark.bookingEndTime')
+         .populate('SelectedPark','location.parkingName').lean()
+          ParkingOrder2.orderFinishDate=ParkingOrder2.userId.bookedPark.bookingEndTime
+          delete ParkingOrder2.userId.bookedPark
+         
        // populate('userId', 'email firstName lastName').populate('SelectedPark', 'location.Price location.parkingName')
         //
         // if (bookedParkAdmin && bookedParkAdmin.socketId) {
@@ -100,7 +106,10 @@ export const bookingPark = async (req, res) => {
 
         const Adminname =parkChoosed.Admin.username
         let socketId= u.find(user=>user.user==Adminname)
-       io.to(socketId.id).emit('add',ParkOrder)
+        if(socketId){
+            io.to(socketId.id).emit('add',ParkingOrder2)
+        }
+    
       
         return res.status(200).json({
             parkNumber: emptyPark.parkNumber,

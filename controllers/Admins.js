@@ -2,6 +2,7 @@ import Admin from "../modules/Admins.js";
 import parking from "../modules/parking.js";
 import validator from 'validator'
 import bcrypt from 'bcryptjs'
+import { StatusCodes } from "http-status-codes";
 
 export const registerAdmin = async (req, res,) => {
     try {
@@ -88,3 +89,49 @@ export const logoutAdmin = async (req, res) => {
 }
 
 
+export const addPark =async(req,res)=>{
+    try {
+        const {  parkingName, parklat,parklong,  NumberOfCarRepairPlaces, Price ,AdminEmail} = req.body;
+        if(!parkingName || !parklat||!parklong || !NumberOfCarRepairPlaces || !Price || !AdminEmail){
+            return res.status(StatusCodes.BAD_REQUEST).json({message :"Please Provide Full Information"})
+        }
+        /////create Park array
+        const park = Array.from({ length: 10 }, (_, i) => ({ parkNumber: i + 1 }));
+        /////////create Car Reapir Places Array
+        const carRepairPlaces = Array.from({ length: NumberOfCarRepairPlaces }, (_, i) => ({
+            carRepairNumber: i + 1,
+            filled: false,
+            carNumber: "",
+        }));
+        ////////////////////////////////////////
+        ///find The Admin
+        const AdminId = await Admin.findOne({email:AdminEmail})
+        if(!AdminId){
+            return res.status(StatusCodes.BAD_REQUEST).json({message:"admin Not Found"})
+        }
+        //////find The Highest parking Numer to make sure there is no two parks have the same Number
+        const HighestparkingNumber = await parking.find().sort({"location.parkingNumber":-1}).limit(1)
+        const parkingNumber = HighestparkingNumber.length > 0 ?HighestparkingNumber[0].location.parkingNumber + 1 : 1
+
+       
+      
+        console.log(park);
+        const location =[parklong,parklat]
+        const newParking = await parking.create({
+            Admin:AdminId._id,
+            "location.parkingName": parkingName,
+            "location.parkingNumber":parkingNumber,
+            "location.coordinates": location,
+            park: park,
+            carRepairPlaces: carRepairPlaces,
+            "location.price": Price
+        })
+
+       return  res.status(StatusCodes.OK).json({messgae:"done Sucessfuly"})
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message:"Internal Server Error"})
+        
+    }
+}

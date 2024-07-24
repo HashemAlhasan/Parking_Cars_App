@@ -12,13 +12,14 @@ const parkingSchema = new Schema({
         type: {
             type: String,
             enum: ['Point'],
-            required: true
+            required: false,
+            default:'Point'
         },
         coordinates: {
             type: [Number],
             required: true
         },
-        parkingNumber: { type: Number, required: true },
+        parkingNumber: { type: Number, required: true ,unique:true },
         parkingName: { type: String, required: true },
         Price: { type: Number, required: false }
     },
@@ -27,7 +28,7 @@ const parkingSchema = new Schema({
             parkNumber: { type: Number, required: true },
             filled: { type: Boolean, default: false },
             carNumber: { type: String, default: null },
-            bookingEndTime: { type: Date, required: true }
+            bookingEndTime: { type: Date, required: false,default:null }
 
 
         }
