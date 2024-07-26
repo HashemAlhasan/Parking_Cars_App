@@ -19,6 +19,7 @@ import Admins from './routes/Admin.js'
 import admin from 'firebase-admin'
 import parking from './modules/parking.js';
 import Admin from './modules/Admins.js'
+import Statiscs from './routes/Statsics.js'
 import { rateLimitRequest, distributedRateLimitMiddleware, rateLimitMiddleware } from './middleware/rateLimit.js'
 import { on } from 'events';
 import ParkingOrder from './modules/ParkingOrder.js';
@@ -114,6 +115,7 @@ app.use('/api/orders',Order)
 app.use('/api/Admin',MangeOrder)
 app.use('/api/pro',Pro)
 app.use('/api/Admins',Admins)
+app.use('/api/Statiscs',Statiscs)
 server.listen(PORT, async () => {
     console.log(`Server is listening on port: ${PORT}...`)
     try {

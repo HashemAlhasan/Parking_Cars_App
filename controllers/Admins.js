@@ -3,6 +3,10 @@ import parking from "../modules/parking.js";
 import validator from 'validator'
 import bcrypt from 'bcryptjs'
 import { StatusCodes } from "http-status-codes";
+import Admins from "../modules/Admins.js";
+import jwt from 'jsonwebtoken'
+import ParkingOrder from "../modules/ParkingOrder.js";
+
 
 export const registerAdmin = async (req, res,) => {
     try {
@@ -31,7 +35,7 @@ export const registerAdmin = async (req, res,) => {
         if (!validator.isLength(lastName, { min: 1, max: 10 })) {
             return res.status(400).json({ message: 'Last Name is required' });
         }
-        const isExist = await Admin.findOne({ $or: [{ email }, { username }] })
+        const isExist = await Admins.findOne({ $or: [{ email }, { username }] })
         if (isExist) {
             return res.status(409).json({ message: 'email is already exsisted Pleas Input another email' })
         }
@@ -58,24 +62,41 @@ export const loginAdmin = async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ msg: "Please provide email and password to login" });
         }
-        const admin = await Admin.findOne({ email });
+        const admin = await Admins.findOne({ email }).select("firstName  lastName email password role  username");
         if (!admin) {
             return res.status(400).json({ message: "Password or email may be incorrect" });
         }
-        if (admin && (await bcrypt.compare(password.toString(), Admin.password))) {
+         if (admin && (await bcrypt.compare(password.toString(), admin.password))) {
             console.log(`${admin.firstName} Loged-in`);
             const token = jwt.sign({ email: admin.email }, process.env.TOKEN_KEY, { expiresIn: '90d' });
+            const AdminPark= await parking.find({Admin:admin._id}).select("location.parkingName location.parkingNumber location.price")
             res.cookie('token', token, { maxAge: 240 * 60 * 60 * 1000 });
-            res.status(200).json({ message: "Login Sucessfly", token: token, admin: admin });
-        } else {
-            return res.status(400).json({ message: "Password or email may be incorrect" });
-        }
+            res.status(200).json({ message: "Login Sucessfly", token: token, admin: admin  });
+         } else {
+             return res.status(400).json({ message: "Password or email may be incorrect" });
+         }
+        
     } catch (error) {
         console.log(error);
         res.status(500).json(error);
     }
 }
-
+export const getMyParks = async(req,res)=>{
+    const {AdminEmail} =req.body 
+    if(!AdminEmail){
+        return res.status(StatusCodes.BAD_REQUEST).json({messgae : 'Please provide full info '})
+    }
+    const Admin1  = await Admins.findOne({email :AdminEmail})
+    if(!Admin1){
+        return res.status(StatusCodes.BAD_REQUEST).json({message: " Admin Not Found"})
+    }
+    const parks =await parking.find({Admin:Admin1._id}).select('location.parkingName location.Price location.parkingNumber')
+    if(!parks){
+        return res.status(StatusCodes.BAD_REQUEST).json({message: "You Don't have any parks "})
+    }
+   
+    return res.status(StatusCodes.OK).json(parks)
+}
 
 
 export const logoutAdmin = async (req, res) => {
@@ -124,7 +145,7 @@ export const addPark =async(req,res)=>{
             "location.coordinates": location,
             park: park,
             carRepairPlaces: carRepairPlaces,
-            "location.price": Price
+            "location.Price": Price
         })
 
        return  res.status(StatusCodes.OK).json({messgae:"done Sucessfuly"})
@@ -133,5 +154,39 @@ export const addPark =async(req,res)=>{
         console.error(error);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message:"Internal Server Error"})
         
+    }
+}
+export const editPark = async(req,res)=>{
+    try {
+        
+        const {AdminEmail , parkingName,parkingNumber,  Price }= req.body
+        if(!AdminEmail || !parkingName  || !Price){
+            return res.status(StatusCodes.OK).json({message : 'Please Provide All Information'})
+        }
+    
+        const Admin = await Admins.findOne({email : AdminEmail})
+        if(!Admin){
+            return res.status(StatusCodes.BAD_REQUEST).json({message : "Admin Not Found"})
+        }
+        const AdminPark = await parking.findOne({$and:[
+            {Admin:Admin._id},
+            {"location.parkingNumber": parkingNumber}
+        ]})
+        if(!AdminPark){
+            return res.status(StatusCodes.BAD_REQUEST).json({messgae:"There Is No Park with specified Name"})
+        }
+        AdminPark.location.parkingName=parkingName
+        AdminPark.location.Price=Price
+        AdminPark.save()
+
+
+
+    
+    
+         
+        return res.status(StatusCodes.OK).json({message : "Done Sucessfuly"})
+    } catch (error) {
+        console.error(error)
+        return  res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({messgae:"internal server Error"})
     }
 }
