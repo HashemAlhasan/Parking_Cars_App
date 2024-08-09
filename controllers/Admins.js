@@ -6,6 +6,7 @@ import { StatusCodes } from "http-status-codes";
 import Admins from "../modules/Admins.js";
 import jwt from 'jsonwebtoken'
 import ParkingOrder from "../modules/ParkingOrder.js";
+import User from '../modules/users.js'
 
 
 export const registerAdmin = async (req, res,) => {
@@ -62,6 +63,10 @@ export const loginAdmin = async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ msg: "Please provide email and password to login" });
         }
+        const user = await User.findOne({email:email})
+        if(user){
+            return res.status(StatusCodes.BAD_REQUEST).json({message : "Please Log in as a user"})
+        }
         const admin = await Admins.findOne({ email }).select("firstName  lastName email password role  username");
         if (!admin) {
             return res.status(400).json({ message: "Password or email may be incorrect" });
@@ -90,7 +95,7 @@ export const getMyParks = async(req,res)=>{
     if(!Admin1){
         return res.status(StatusCodes.BAD_REQUEST).json({message: " Admin Not Found"})
     }
-    const parks =await parking.find({Admin:Admin1._id}).select('location.parkingName location.Price location.parkingNumber')
+    const parks =await parking.find({Admin:Admin1._id}).select('location.parkingName location.Price ')
     if(!parks){
         return res.status(StatusCodes.BAD_REQUEST).json({message: "You Don't have any parks "})
     }
@@ -135,9 +140,19 @@ export const addPark =async(req,res)=>{
         const parkingNumber = HighestparkingNumber.length > 0 ?HighestparkingNumber[0].location.parkingNumber + 1 : 1
 
        
-      
         console.log(park);
-        const location =[parklong,parklat]
+        const location =[parklat,parklong]
+        const existingPark = await parking.findOne({
+            $or: [
+                { 'location.coordinates': location },
+                { 'location.parkingName': parkingName }
+            ]
+        });
+       //console.log(parks);
+       if(existingPark) {
+        return res.status(StatusCodes.BAD_REQUEST).json({message : 'Park Already Found'})
+       }
+      
         const newParking = await parking.create({
             Admin:AdminId._id,
             "location.parkingName": parkingName,
@@ -148,7 +163,7 @@ export const addPark =async(req,res)=>{
             "location.Price": Price
         })
 
-       return  res.status(StatusCodes.OK).json({messgae:"done Sucessfuly"})
+       return  res.status(StatusCodes.OK).json({message:"done Sucessfuly"})
         
     } catch (error) {
         console.error(error);
@@ -159,27 +174,29 @@ export const addPark =async(req,res)=>{
 export const editPark = async(req,res)=>{
     try {
         
-        const {AdminEmail , parkingName,parkingNumber,  Price }= req.body
-        if(!AdminEmail || !parkingName  || !Price){
+        const {AdminEmail , parkingName,newParkingName,  Price , newPrice}= req.body
+        if(!AdminEmail){
             return res.status(StatusCodes.OK).json({message : 'Please Provide All Information'})
         }
-    
+       
+        
+        
         const Admin = await Admins.findOne({email : AdminEmail})
         if(!Admin){
             return res.status(StatusCodes.BAD_REQUEST).json({message : "Admin Not Found"})
         }
         const AdminPark = await parking.findOne({$and:[
             {Admin:Admin._id},
-            {"location.parkingNumber": parkingNumber}
+            {"location.parkingName": parkingName}
         ]})
         if(!AdminPark){
             return res.status(StatusCodes.BAD_REQUEST).json({messgae:"There Is No Park with specified Name"})
         }
-        AdminPark.location.parkingName=parkingName
-        AdminPark.location.Price=Price
-        AdminPark.save()
+        AdminPark.location.parkingName=newParkingName || parkingName
+        AdminPark.location.Price=newPrice || Price
+      await  AdminPark.save()
 
-
+        console.log(AdminPark);
 
     
     
@@ -188,5 +205,27 @@ export const editPark = async(req,res)=>{
     } catch (error) {
         console.error(error)
         return  res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({messgae:"internal server Error"})
+    }
+}
+export const Settings = async(req,res)=>{
+    try {
+        
+        const  {AdminEmail , newAdminEmail , username , newusername} = req.body 
+        if(!AdminEmail || !username){
+            return res.status(StatusCodes.BAD_REQUEST).json({message : "Please Provide Full info"})
+        }
+        const AdminInfo =  await Admins.findOne({email:AdminEmail})
+        if(!AdminInfo){
+            return res.status(StatusCodes.BAD_REQUEST).json({message : "Admin Not Found"})
+        }
+         AdminInfo.email= newAdminEmail || AdminEmail
+         AdminInfo.username= newusername || username
+         await AdminInfo.save()
+    
+    
+        return res.status(StatusCodes.OK).json({message :AdminInfo})
+    } catch (error) {
+        console.error(error)
+        
     }
 }

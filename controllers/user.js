@@ -6,6 +6,8 @@ import bcrypt from 'bcryptjs'
 import validator from 'validator'
 import CryptoJS from 'crypto-js';
 import { StatusCodes } from "http-status-codes";
+import Admins from "../modules/Admins.js";
+
 
 import { SendVerifyCode } from '../utils/SendTheCode.js';
 
@@ -76,6 +78,10 @@ export const login = async (req, res) => {
         const { email, password } = req.body;
         if (!email || !password) {
             return res.status(400).json({ msg: "Please provide email and password to login" });
+        }
+        const Admin = await Admins.findOne({email:email})
+        if(Admin){
+            return res.status(StatusCodes.BAD_REQUEST).json({message:'Please Log In As Admin'})
         }
         const user = await User.findOne({ email }).populate('car' , 'carModel carType carNumber');
         if (!user) {

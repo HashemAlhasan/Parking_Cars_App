@@ -19,6 +19,8 @@ import {getUsers} from '../app.js'
 export const bookingPark = async (req, res) => {
     try {
         const { username, duration, Spot, date } = req.body;
+        console.log('date : ',date);
+        console.log(duration);
         const parkingName = req.body.parkingName;
         if (!username || !duration || !Spot || !date) {
            return  res.status(StatusCodes.BAD_REQUEST).json({ message: "All inputs are Required" })
@@ -79,7 +81,7 @@ export const bookingPark = async (req, res) => {
             userId: user._id,
             SelectedPark: parkChoosed._id,
             duration: duration,
-            Price: user.paymentAmount
+            Price: paymentAmount
 
         })
          await ParkOrder.populate('userId','email firstName lastName bookedPark.bookingEndTime')
@@ -122,7 +124,7 @@ export const bookingPark = async (req, res) => {
 
         });
     } catch (error) {
-        console.error('Error booking parking:', error.message);
+        console.error('Error booking parking:', error);
         return res.status(500).json({ message: 'Booking failed' });
     }
 };
@@ -272,14 +274,14 @@ export const ParkingTimer = async (req, res) => {
 
         // Check if the parking time has ended
         if (currentTime > adjustedBookingEndTime.setHours(adjustedBookingEndTime.getHours()+park.duration)) {
-            // park.duration=0
-            // park.filled=false
-            // park.carNumber=null
-            // user.bookedPark.ChoosedParkName=null,
-            // user.bookedPark.bookingEndTime=null,
-            // user.bookedPark.parkNumber=null
-            // await user.save()
-            // await parkingName.save()
+            park.duration=0
+            park.filled=false
+            park.carNumber=null
+            user.bookedPark.ChoosedParkName=null,
+            user.bookedPark.bookingEndTime=null,
+            user.bookedPark.parkNumber=null
+            await user.save()
+            await parkingName.save()
 
 
             return res.status(StatusCodes.OK).json({ message: 'Parking Time Has Ended', hours: 0, minutes: 0, seconds: 0 });
@@ -396,4 +398,40 @@ function convertTo24HourFormat(timeString) {
     formattedHour = formattedHour.toString()
 
     return `${formattedHour}:${minute}`;
+}
+export const CanceLBooking = async(req,res)=>{
+    try {
+        const {email} = req.body
+        if(!email){
+            return res.status(StatusCodes.BAD_REQUEST).json({message : " Email not found"})
+        }
+        const  user =  await User.findOne({email :email})
+        if(!user){
+            return res.status(StatusCodes.BAD_REQUEST).json({message : 'User Not Found'})
+        }
+        
+        const SelectedPark = await Parking.findOne({'location.parkingName':user.bookedPark.
+        ChoosedParkName})
+        if(!SelectedPark){
+            return res.status(StatusCodes.BAD_REQUEST).json({message : 'Error You have`t Booked Yet'})
+        }
+        const park =SelectedPark.park[user.bookedPark.parkNumber-1]
+        SelectedPark.park[user.bookedPark.parkNumber-1].duration=0
+        SelectedPark.park[user.bookedPark.parkNumber-1].filled=false
+        SelectedPark.park[user.bookedPark.parkNumber-1].carNumber=null
+        SelectedPark.park[user.bookedPark.parkNumber-1].bookingEndTime=null
+        SelectedPark.save()
+        user.bookedPark.ChoosedParkName=''
+        user.bookedPark.parkNumber=null
+        user.bookedPark.bookingEndTime=null
+        user.save()
+    
+        return res.status(StatusCodes.OK).json({message : "Done Sucessfuly"})
+        
+    } catch (error) {
+        console.error(error)
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message:"Internal Server Error"})
+        
+    }
+   
 }

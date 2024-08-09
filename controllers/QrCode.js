@@ -53,7 +53,7 @@ export const  getQrParkingSpots = async(req,res)=>{
       return res.status(StatusCodes.BAD_REQUEST).json({message:"no empty Spots Availabel in Parking Place"})
    }
    
-   console.log(spots);
+  // console.log(spots);
       return res.status(StatusCodes.OK).json({ParkingName : ParkingSpots.location.parkingName, Price : ParkingSpots.location.Price, spot:spots.parkNumber})
 
 

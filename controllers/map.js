@@ -2,6 +2,7 @@
 import parking from "../modules/parking.js";
 import  {StatusCodes}from 'http-status-codes'
 
+import User from '../modules/users.js';
 
 
 
@@ -28,12 +29,13 @@ export const getParkingLocations = async (req, res) => {
         return res.status(200).json({parkingLocations:parkingLocations});
 
     } catch (error) {
+        console.log(error);
         res.status(400).json({ msg:"Please Provide UserLatitude and UserLangtitude" });
     }
 }
 export const  getParkingSpots = async(req,res)=>{
     try {
-        const  {ParkingNumber}= req.body 
+        const  {ParkingNumber ,username}= req.body 
         if(!ParkingNumber){
            return  res.status(StatusCodes.BAD_REQUEST).json({message : " Please Provide Park Number"})
             
@@ -63,7 +65,12 @@ export const  getParkingSpots = async(req,res)=>{
         return res.status(StatusCodes.BAD_REQUEST).json({message:"no empty Spots Availabel in Parking Place"})
      }
      
-     console.log(spots);
+
+     const user  = await User.findOne({username :username})
+    //  if(user.bookedPark.ChoosedParkName){
+    //     return res.status(StatusCodes.BAD_REQUEST).json({message :'You have been Already Parked'})
+    //  }
+    //  console.log(spots);
         return res.status(StatusCodes.OK).json(ParkingSpots)
 
 

@@ -38,9 +38,13 @@ const io = new Server(server)
         console.log(Users);
        
        const ParkingAdminOrders = await  getParkingOrders(data.username)
-      
+        //console.log(ParkingAdminOrders);
       // console.log(ParkingAdminOrders);
-        socket.emit("getall",ParkingAdminOrders)
+      if(!ParkingAdminOrders){
+        socket.emit("getall",'No Park Orders Yet ')
+      }
+      else{
+        socket.emit("getall",ParkingAdminOrders)}
 
     })
 })
@@ -49,37 +53,40 @@ const getParkingOrders =async(username)=>{
     const admin= await Admin.findOne({username:username})
     //console.log(adminid);
     //FindAllParkingOrders
-    const ParkingAdminOrders =await ParkingOrder.find({}).populate('SelectedPark','location.parkingName Admin').populate('userId','email firstName lastName bookedPark.bookingEndTime')
-    .lean().sort({"userId.bookedPark.bookingEndTime":-1})
+    if(!admin) {
+        return   'The Admin Is Not found'
+    }
+    const ParkingAdminOrders =await ParkingOrder.find({})
+    .populate('SelectedPark','location.parkingName Admin')
+    .populate('userId','email firstName lastName bookedPark.bookingEndTime')
+    .lean().
+    sort({"userId.bookedPark.bookingEndTime":-1})
    // console.log(ParkingAdminOrders);
-   //add Finish Date Field 
-    const ParkingAdminOrdersWithOrderFinsihDate=  await ParkingAdminOrders.map(doc=>{
-        if (doc.userId && doc.userId.bookedPark && doc.userId.bookedPark.bookingEndTime) {
-          doc.orderFinishDate=doc.userId.bookedPark.bookingEndTime
-      //   delete doc.userId.bookedPark.bookingEndTime;
+   if (!ParkingAdminOrders.length) {
+    return 'There are no parking orders yet';
+}
 
+    const ParkingAdminOrdersResult = ParkingAdminOrders
+    .map(doc => {
+        if (doc.userId?.bookedPark?.bookingEndTime) {
+            doc.orderFinishDate = doc.userId.bookedPark.bookingEndTime;
+            
         }
-       
-         return doc
+        return doc;
     })
-    //Delete The Booked Park Object because its empty
-    const ParkingAdminOrdersWithoutBookedParkObject =await ParkingAdminOrdersWithOrderFinsihDate.map(doc=>{
-        delete doc.userId.bookedPark
+    .filter(order => order.SelectedPark.Admin.toString() === admin._id.toString()).map(doc=>{
+        delete doc.userId.bookedPark;
         return doc
-    })
-    //console.log(ParkingAdminOrdersWithoutBookedParkObject);
-    //Find the orders which Park is belonged to admin
-    const ParkingAdminOrdersResult= await ParkingAdminOrdersWithoutBookedParkObject.find(order=> order.SelectedPark.Admin.toString()===admin._id.toString())
-
-
-    //console.log(ParkingAdminOrders1);
-    
+    });
+    if(ParkingAdminOrdersResult.length <1){
+        return 'No Parking Yet'
+    }
   return ParkingAdminOrdersResult
 }
 
 function addUser(userName, id) {
     // Check if the user already exists in the list
-    const existingUser = Users.find(user => user.user === userName);
+    const existingUser = Users.find(user => user.user == userName);
 
     if (existingUser) {
         // User exists, update the ID
