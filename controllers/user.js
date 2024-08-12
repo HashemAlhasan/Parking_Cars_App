@@ -7,14 +7,13 @@ import validator from 'validator'
 import CryptoJS from 'crypto-js';
 import { StatusCodes } from "http-status-codes";
 import Admins from "../modules/Admins.js";
-
-
 import { SendVerifyCode } from '../utils/SendTheCode.js';
+
 
 export const register = async (req, res,) => {
 
     try {
-        const { email, password, confirmPassword, username, firstName, lastName, carNumber, carModel, carType,fcmToken } = req.body
+        const { email, password, confirmPassword, username, firstName, lastName, carNumber, carModel, carType, fcmToken } = req.body
 
         if (!(email && password && username && firstName && lastName && carNumber && carModel && carType)) {
             return res.status(400).send("All input is required");
@@ -51,7 +50,7 @@ export const register = async (req, res,) => {
             username: username,
             firstName: firstName,
             lastName: lastName,
-            fcmToken:fcmToken
+            fcmToken: fcmToken
         })
         const newUserCar = await Cars.create({
             onerId: newUser._id,
@@ -77,26 +76,27 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            return res.status(400).json({ msg: "Please provide email and password to login" });
+            const message = req.cookies.language === 'ar' ? 'الرجاء إدخال البريد الإلكتروني وكلمة المرور لتسجيل الدخول' : 'Please provide email and password to login'
+            return res.status(400).json({ message: message });
         }
-        const Admin = await Admins.findOne({email:email})
-        if(Admin){
-            return res.status(StatusCodes.BAD_REQUEST).json({message:'Please Log In As Admin'})
+        const Admin = await Admins.findOne({ email: email })
+        if (Admin) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please Log In As Admin' })
         }
-        const user = await User.findOne({ email }).populate('car' , 'carModel carType carNumber');
-        if (!user) {
-            return res.status(400).json({ message: "Password or email may be incorrect" });
-        }
+        const user = await User.findOne({ email }).populate('car', 'carModel carType carNumber');
         if (user && (await bcrypt.compare(password.toString(), user.password))) {
             if (user.emailVerified == false) {
-                return res.status(400).json({ message: "Please verify your Email and try again" });
+                const message = req.cookies.language === 'ar' ? 'الرجاء التحقق من بريدك الإلكتروني ثم حاول مرة أخرى' : 'Please verify your Email and try again'
+                return res.status(400).json({ message: message });
             }
             console.log(`${user.username} Loged-in`);
             const token = jwt.sign({ email: user.email }, process.env.TOKEN_KEY, { expiresIn: '90d' });
             res.cookie('token', token, { maxAge: 240 * 60 * 60 * 1000 });
-            res.status(200).json({ message: "Login Sucessfly", token: token, user: user });
+            const successMessage = req.cookies.language === 'ar' ? 'تم تسجيل الدخول بنجاح' : 'Login successful';
+            res.status(200).json({ message: successMessage, token: token, user: user });
         } else {
-            return res.status(400).json({ message: "Password or email may be incorrect 2" });
+            const message = req.cookies.language === 'ar' ? 'كلمة المرور أو البريد الإلكتروني غير صحيحين' : 'Password or email may be incorrect'
+            return res.status(400).json({ message: message });
         }
     } catch (error) {
         console.log(error);
@@ -124,7 +124,7 @@ export const verifyCode = async (req, res) => {
         if (!validator.isEmail(email)) {
             return res.status(400).json({ message: "Invalid Email" })
         }
-        const user = await User.findOne({ email }).populate('car' , 'carModel carType carNumber');
+        const user = await User.findOne({ email }).populate('car', 'carModel carType carNumber');
         if (!user) {
             return res.status(400).json({ message: "User not found" });
         }
@@ -191,7 +191,6 @@ export const resetPassword = async (req, res) => {
         const newPassword = req.body.newPassword
         const confirmPassword = req.body.confirmPassword
         const email = req.body.email
-
         if (!validator.isLength(newPassword, { min: 6 })) {
             return res.status(400).json({ message: "Password should be at least 6 characters long" })
         }
@@ -293,34 +292,47 @@ export const sendEmail = async (email, subject, message) => {
         throw new Error(error)
     }
 }
-export const UpdateUser= async(req,res)=>{
-  try {  const {username,firstName,lastName, newusername,carNumber ,carModel ,carType}=req.body
-  if(!username || firstName || lastName || newusername || carNumber || carModel || carType ){
-      return res.status(StatusCodes.BAD_REQUEST).json({message :"Please send Full info "})
-  }
-  const user =await User.findOne({username:username}).populate('car' ,'carNumber carModel carType')
-  if(!user){
-      return res.status(StatusCodes.BAD_REQUEST).json({message :`Cannot find user ${username}`})
-  }
-  user.username=newusername
-user.firstName=firstName
-user.lastName=lastName
+export const UpdateUser = async (req, res) => {
+    try {
+        const { username, firstName, lastName, newusername, carNumber, carModel, carType } = req.body
+        if (!username || firstName || lastName || newusername || carNumber || carModel || carType) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Please send Full info " })
+        }
+        const user = await User.findOne({ username: username }).populate('car', 'carNumber carModel carType')
+        if (!user) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: `Cannot find user ${username}` })
+        }
+        user.username = newusername
+        user.firstName = firstName
+        user.lastName = lastName
 
-  user.save()
-  const UserCar = await Cars.findOne({onerId:user._id})
-  if(!UserCar){
-      return res.status(StatusCodes.BAD_REQUEST).json({message : "Cannot find Specified Car for this user"})
-  }
-  UserCar.carModel=carModel,
-  UserCar.carNumber=carNumber,
-  UserCar.carType=carType
-  UserCar.save()
+        user.save()
+        const UserCar = await Cars.findOne({ onerId: user._id })
+        if (!UserCar) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Cannot find Specified Car for this user" })
+        }
+        UserCar.carModel = carModel,
+            UserCar.carNumber = carNumber,
+            UserCar.carType = carType
+        UserCar.save()
 
-  return res.status(StatusCodes.OK).json({message:user})
-    
-  } catch (error) {
-    console.log(error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message : `and error occured : ${error}`})
-    
-  }
+        return res.status(StatusCodes.OK).json({ message: user })
+
+    } catch (error) {
+        console.log(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: `and error occured : ${error}` })
+
+    }
+};
+
+
+export const getDeviceLang = async (req, res) => {
+    try {
+        const language = req.body.deviceLanguage;
+        res.cookie('language', req.body.deviceLanguage)
+        return res.status(200).json({ deviceLanguage: req.language })
+    } catch (error) {
+        console.log(error);
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: `and error occured : ${error}` })
+    }
 }
