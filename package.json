@@ -35,9 +35,13 @@
     "rate-limiter-flexible": "^5.0.3",
     "redis": "^4.6.13",
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     "sinon": "^18.0.0",
 >>>>>>> origin/main
+=======
+    "sinon": "^18.0.0",
+>>>>>>> 73028f2de502a8cdfaf8844580437c70220f6903
     "socket.io": "^4.7.5",
     "validator": "^13.11.0"
   },

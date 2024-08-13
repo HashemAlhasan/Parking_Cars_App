@@ -7,10 +7,14 @@ import validator from 'validator'
 import CryptoJS from 'crypto-js';
 import { StatusCodes } from "http-status-codes";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import Admins from "../modules/Admins.js";
 =======
 
 >>>>>>> origin/main
+=======
+
+>>>>>>> 73028f2de502a8cdfaf8844580437c70220f6903
 import { SendVerifyCode } from '../utils/SendTheCode.js';
 
 
@@ -84,10 +88,13 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: message });
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
         const Admin = await Admins.findOne({ email: email })
         if (Admin) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please Log In As Admin' })
 =======
+=======
+>>>>>>> 73028f2de502a8cdfaf8844580437c70220f6903
         const user = await User.findOne({ email }).populate('car', 'carModel carType carNumber');
         if (!user) {
             return res.status(400).json({ message: "Password or email may be incorrect" });
@@ -102,10 +109,13 @@ export const login = async (req, res) => {
             console.log(`${user.username} Loged-in`);
             const token = jwt.sign({ email: user.email }, process.env.TOKEN_KEY, { expiresIn: '90d' });
 <<<<<<< HEAD
+<<<<<<< HEAD
             res.cookie('token', token, { maxAge: 240 * 60 * 60 * 1000 });
             const successMessage = req.cookies.language === 'ar' ? 'تم تسجيل الدخول بنجاح' : 'Login successful';
             res.status(200).json({ message: successMessage, token: token, user: user });
 =======
+=======
+>>>>>>> 73028f2de502a8cdfaf8844580437c70220f6903
             res.cookie('token', token, {
                 maxAge: 240 * 60 * 60 * 1000, secure: process.env.NODE_ENV === 'production',
                 sameSite: 'Strict'
@@ -339,6 +349,7 @@ export const UpdateUser = async (req, res) => {
 
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 };
 
 
@@ -353,8 +364,13 @@ export const getDeviceLang = async (req, res) => {
     }
 }
 =======
+=======
+>>>>>>> 73028f2de502a8cdfaf8844580437c70220f6903
 }
 
 
 
+<<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> 73028f2de502a8cdfaf8844580437c70220f6903

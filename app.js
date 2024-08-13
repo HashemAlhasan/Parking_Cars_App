@@ -20,6 +20,7 @@ import admin from 'firebase-admin'
 import parking from './modules/parking.js';
 import Admin from './modules/Admins.js'
 <<<<<<< HEAD
+<<<<<<< HEAD
 import Statiscs from './routes/Statsics.js'
 import { rateLimitRequest, distributedRateLimitMiddleware, rateLimitMiddleware } from './middleware/rateLimit.js'
 import { on } from 'events';
@@ -30,6 +31,11 @@ import { rateLimitRequest, rateLimitMiddleware } from './middleware/rateLimit.js
 import { on } from 'events';
 import ParkingOrder from './modules/ParkingOrder.js';
 >>>>>>> origin/main
+=======
+import { rateLimitRequest, rateLimitMiddleware } from './middleware/rateLimit.js'
+import { on } from 'events';
+import ParkingOrder from './modules/ParkingOrder.js';
+>>>>>>> 73028f2de502a8cdfaf8844580437c70220f6903
 const PORT = process.env.PORT || 3000
 const app = express()
 const server = createServer(app);
@@ -45,6 +51,7 @@ io.sockets.on('connection', (socket) => {
         console.log(Users);
 
         const ParkingAdminOrders = await getParkingOrders(data.username)
+<<<<<<< HEAD
 <<<<<<< HEAD
         //console.log(ParkingAdminOrders);
         // console.log(ParkingAdminOrders);
@@ -96,6 +103,8 @@ function addUser(userName, id) {
     // Check if the user already exists in the list
     const existingUser = Users.find(user => user.user == userName);
 =======
+=======
+>>>>>>> 73028f2de502a8cdfaf8844580437c70220f6903
 
         console.log(ParkingAdminOrders);
         socket.emit("getall", ParkingAdminOrders)
@@ -115,7 +124,10 @@ const getParkingOrders = async (username) => {
 function addUser(userName, id) {
     // Check if the user already exists in the list
     const existingUser = Users.find(user => user.user === userName);
+<<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> 73028f2de502a8cdfaf8844580437c70220f6903
 
     if (existingUser) {
         // User exists, update the ID
@@ -143,6 +155,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static('./public'))
 <<<<<<< HEAD
+<<<<<<< HEAD
 app.use(deviceLang)
 // app.use(rateLimitRequest)
 // app.use(rateLimitMiddleware);
@@ -150,6 +163,10 @@ app.use(deviceLang)
 app.use(rateLimitRequest)
 app.use(rateLimitMiddleware);
 >>>>>>> origin/main
+=======
+app.use(rateLimitRequest)
+app.use(rateLimitMiddleware);
+>>>>>>> 73028f2de502a8cdfaf8844580437c70220f6903
 app.use('/api/user', user)
 app.use('/api/parking', parks)
 app.use('/api/problem', problems)
@@ -158,9 +175,12 @@ app.use('/api/Admin', MangeOrder)
 app.use('/api/pro', Pro)
 app.use('/api/Admins', Admins)
 <<<<<<< HEAD
+<<<<<<< HEAD
 app.use('/api/Statiscs', Statiscs)
 =======
 >>>>>>> origin/main
+=======
+>>>>>>> 73028f2de502a8cdfaf8844580437c70220f6903
 server.listen(PORT, async () => {
     console.log(`Server is listening on port: ${PORT}...`)
     try {
