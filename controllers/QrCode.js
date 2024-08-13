@@ -18,8 +18,6 @@ export const qrcodeGenerator = async (req, res) => {
   //return res.status(StatusCodes.OK).json({message :"Done Sucessfuly "})
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 export const getQrParkingSpots = async (req, res) => {
   try {
     const { ParkingNumber } = req.body
@@ -69,97 +67,6 @@ export const getQrParkingSpots = async (req, res) => {
     console.log(error);
     return res.status(StatusCodes.BAD_REQUEST).json({ message: "Internal Server Error" })
 
-=======
-export const  getQrParkingSpots = async(req,res)=>{
-  try {
-      const  {ParkingNumber}= req.body 
-      if(!ParkingNumber){
-         return  res.status(StatusCodes.BAD_REQUEST).json({message : " Please Provide Park Number"})
-          
-      }
-      let ParkingSpots= await parking.findOne({'location.parkingNumber':ParkingNumber}).select('park location.parkingName location.Price')
-      if(!ParkingSpots){
-        return res.status(StatusCodes.BAD_REQUEST).json({message :"no Park Has Been Found"})
-      }
-     //console.log(ParkingSpots.park[1]);
-  //    let ParkingSpot ;
-  //    for (let i in ParkingSpots.park){
-  //     if(ParkingSpots.park[i].filled==false){
-  //         ParkingSpot=i
-  //         break
-          
-  //     }
-      
-     
-  //    }
-  //    ParkingSpots.park[ParkingSpot].Spot=true
-
-  //    console.log(ParkingSpots.park[ParkingSpot]);
-           
-
-        // console.log(ParkingSpots);
-   //  await   Object.assign(ParkingSpots,{'hashem':true})
-   //const spot =  Park.park.find(object=>object.parkNumber==user.bookedPark.parkNumber)
-   const spots =ParkingSpots.park.find(object=>object.filled !=true )
-   if(!spots){
-      return res.status(StatusCodes.BAD_REQUEST).json({message:"no empty Spots Availabel in Parking Place"})
-   }
-   
-   console.log(spots);
-      return res.status(StatusCodes.OK).json({ParkingName : ParkingSpots.location.parkingName, Price : ParkingSpots.location.Price, spot:spots.parkNumber})
-
-
-=======
-export const  getQrParkingSpots = async(req,res)=>{
-  try {
-      const  {ParkingNumber}= req.body 
-      if(!ParkingNumber){
-         return  res.status(StatusCodes.BAD_REQUEST).json({message : " Please Provide Park Number"})
-          
-      }
-      let ParkingSpots= await parking.findOne({'location.parkingNumber':ParkingNumber}).select('park location.parkingName location.Price')
-      if(!ParkingSpots){
-        return res.status(StatusCodes.BAD_REQUEST).json({message :"no Park Has Been Found"})
-      }
-     //console.log(ParkingSpots.park[1]);
-  //    let ParkingSpot ;
-  //    for (let i in ParkingSpots.park){
-  //     if(ParkingSpots.park[i].filled==false){
-  //         ParkingSpot=i
-  //         break
-          
-  //     }
-      
-     
-  //    }
-  //    ParkingSpots.park[ParkingSpot].Spot=true
-
-  //    console.log(ParkingSpots.park[ParkingSpot]);
-           
-
-        // console.log(ParkingSpots);
-   //  await   Object.assign(ParkingSpots,{'hashem':true})
-   //const spot =  Park.park.find(object=>object.parkNumber==user.bookedPark.parkNumber)
-   const spots =ParkingSpots.park.find(object=>object.filled !=true )
-   if(!spots){
-      return res.status(StatusCodes.BAD_REQUEST).json({message:"no empty Spots Availabel in Parking Place"})
-   }
-   
-   console.log(spots);
-      return res.status(StatusCodes.OK).json({ParkingName : ParkingSpots.location.parkingName, Price : ParkingSpots.location.Price, spot:spots.parkNumber})
-
-
->>>>>>> 73028f2de502a8cdfaf8844580437c70220f6903
-
-  
-  } catch (error) {
-      console.log(error);
-      return res.status(StatusCodes.BAD_REQUEST).json({message:"Internal Server Error"})
-      
-<<<<<<< HEAD
->>>>>>> origin/main
-=======
->>>>>>> 73028f2de502a8cdfaf8844580437c70220f6903
   }
 
 
