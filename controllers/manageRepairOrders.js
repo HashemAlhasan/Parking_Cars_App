@@ -3,7 +3,7 @@ import User from '../modules/users.js';
 import RepairOrder from "../modules/RepairOrder.js";
 import parking from '../modules/parking.js';
 import Notification from '../modules/notifications.js';
-// import { sendNotification } from '../utils/sendNotifications.js'
+import { sendNotification } from '../utils/sendNotifications.js'
 
 export const allRepairOrdersList = async (req, res) => {
     try {
@@ -91,7 +91,7 @@ export const updateRepairOrderStatuse = async (req, res) => {
         await notification.save();
 
         // Send notification via Firebase Cloud Messaging
-        // await sendNotification(userId, message, fcmToken);
+        await sendNotification(userId, message, fcmToken);
 
         res.status(StatusCodes.OK).json({ message: repairOrder });
     } catch (error) {
