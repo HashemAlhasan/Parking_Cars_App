@@ -8,7 +8,7 @@ import { StatusCodes } from 'http-status-codes';
 
 export const selectProblem = async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.body.username }).populate('car')
+        const user = await User.findOne({ username: req.user }).populate('car')
         //console.log(user);
         if (!user) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: "Cannot fond user" })

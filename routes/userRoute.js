@@ -1,8 +1,8 @@
 import { Router } from "express";
 const router = Router()
 
-import { getDeviceLang, register, sendCode, verifyCode, login, verifyResetPasswordCode, logout, resetPassword, forgotPassword, UpdateUser } from '../controllers/user.js'
-import { verifyToken, VerificationCode } from '../middleware/verifyToken.js'
+import { register, sendCode, verifyCode, login, verifyResetPasswordCode, logout, resetPassword, forgotPassword } from '../controllers/user.js'
+import { verifyToken,VerificationCode } from '../middleware/verifyToken.js'
 
 
 router.route('/register').post(register);

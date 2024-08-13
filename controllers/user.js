@@ -6,7 +6,11 @@ import bcrypt from 'bcryptjs'
 import validator from 'validator'
 import CryptoJS from 'crypto-js';
 import { StatusCodes } from "http-status-codes";
+<<<<<<< HEAD
 import Admins from "../modules/Admins.js";
+=======
+
+>>>>>>> origin/main
 import { SendVerifyCode } from '../utils/SendTheCode.js';
 
 
@@ -15,7 +19,7 @@ export const register = async (req, res,) => {
     try {
         const { email, password, confirmPassword, username, firstName, lastName, carNumber, carModel, carType, fcmToken } = req.body
 
-        if (!(email && password && username && firstName && lastName && carNumber && carModel && carType)) {
+        if (!(email && password && confirmPassword && username && firstName && lastName && carNumber && carModel && carType)) {
             return res.status(400).send("All input is required");
         }
         if (!validator.isEmail(email)) {
@@ -79,9 +83,15 @@ export const login = async (req, res) => {
             const message = req.cookies.language === 'ar' ? 'الرجاء إدخال البريد الإلكتروني وكلمة المرور لتسجيل الدخول' : 'Please provide email and password to login'
             return res.status(400).json({ message: message });
         }
+<<<<<<< HEAD
         const Admin = await Admins.findOne({ email: email })
         if (Admin) {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please Log In As Admin' })
+=======
+        const user = await User.findOne({ email }).populate('car', 'carModel carType carNumber');
+        if (!user) {
+            return res.status(400).json({ message: "Password or email may be incorrect" });
+>>>>>>> origin/main
         }
         const user = await User.findOne({ email }).populate('car', 'carModel carType carNumber');
         if (user && (await bcrypt.compare(password.toString(), user.password))) {
@@ -91,9 +101,17 @@ export const login = async (req, res) => {
             }
             console.log(`${user.username} Loged-in`);
             const token = jwt.sign({ email: user.email }, process.env.TOKEN_KEY, { expiresIn: '90d' });
+<<<<<<< HEAD
             res.cookie('token', token, { maxAge: 240 * 60 * 60 * 1000 });
             const successMessage = req.cookies.language === 'ar' ? 'تم تسجيل الدخول بنجاح' : 'Login successful';
             res.status(200).json({ message: successMessage, token: token, user: user });
+=======
+            res.cookie('token', token, {
+                maxAge: 240 * 60 * 60 * 1000, secure: process.env.NODE_ENV === 'production',
+                sameSite: 'Strict'
+            });
+            res.status(200).json({ message: "Login Sucessfly", token: token, user: user });
+>>>>>>> origin/main
         } else {
             const message = req.cookies.language === 'ar' ? 'كلمة المرور أو البريد الإلكتروني غير صحيحين' : 'Password or email may be incorrect'
             return res.status(400).json({ message: message });
@@ -159,32 +177,29 @@ export const verifyCode = async (req, res) => {
 };
 
 
-export const
-
-
-    forgotPassword = async (req, res) => {
-        try {
-            const email = req.body.email
-            if (!validator.isEmail(email)) {
-                return res.status(400).json({ message: "Invalid Email" })
-            }
-            const user = await User.findOne({ email });
-            if (!user) {
-                return res.status(400).json("User not found");
-            }
-            const userResetPasswordCode = generateVerificationCode();
-            const subject = "Reset Password email";
-            const message = `Your reset password code  is: ${userResetPasswordCode} the expiration time in 5 minutes`
-            await sendEmail(email, subject, message);
-            user.resetPasswordCode = userResetPasswordCode;
-            user.resetPasswordExpiration = Date.now() + 5 * 60 * 1000;
-            await user.save();
-            return res.status(200).json({ message: "Password reset email sent" });
-        } catch (error) {
-            console.log(error);
-            return res.status(500).json({ message: "Error processing request" });
+export const forgotPassword = async (req, res) => {
+    try {
+        const email = req.body.email
+        if (!validator.isEmail(email)) {
+            return res.status(400).json({ message: "Invalid Email" })
         }
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json("User not found");
+        }
+        const userResetPasswordCode = generateVerificationCode();
+        const subject = "Reset Password email";
+        const message = `Your reset password code  is: ${userResetPasswordCode} the expiration time in 5 minutes`
+        await sendEmail(email, subject, message);
+        user.resetPasswordCode = userResetPasswordCode;
+        user.resetPasswordExpiration = Date.now() + 5 * 60 * 1000;
+        await user.save();
+        return res.status(200).json({ message: "Password reset email sent" });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Error processing request" });
     }
+}
 
 export const resetPassword = async (req, res) => {
     try {
@@ -323,6 +338,7 @@ export const UpdateUser = async (req, res) => {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: `and error occured : ${error}` })
 
     }
+<<<<<<< HEAD
 };
 
 
@@ -336,3 +352,9 @@ export const getDeviceLang = async (req, res) => {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: `and error occured : ${error}` })
     }
 }
+=======
+}
+
+
+
+>>>>>>> origin/main

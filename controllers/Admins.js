@@ -2,12 +2,15 @@ import Admin from "../modules/Admins.js";
 import parking from "../modules/parking.js";
 import validator from 'validator'
 import bcrypt from 'bcryptjs'
+<<<<<<< HEAD
 import { StatusCodes } from "http-status-codes";
 import Admins from "../modules/Admins.js";
 import jwt from 'jsonwebtoken'
 import ParkingOrder from "../modules/ParkingOrder.js";
 import User from '../modules/users.js'
 
+=======
+>>>>>>> origin/main
 
 export const registerAdmin = async (req, res,) => {
     try {

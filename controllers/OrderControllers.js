@@ -5,9 +5,9 @@ import User from '../modules/users.js';
 import RepairOrder from "../modules/RepairOrder.js"
 export const getAllParkingOrders = async (req, res) => {
     try {
-        const { username } = req.body
+        const { username } = req.user
         if (!username) {
-           return res.status(StatusCodes.BAD_REQUEST).json({ message: "Please Provide User Name" })
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Please Provide User Name" })
         }
         const user = await User.findOne({ username: username })
         if (!user) {
@@ -27,9 +27,9 @@ export const getAllParkingOrders = async (req, res) => {
 }
 export const getAllRepairOrders = async (req, res) => {
     try {
-        const { username } = req.body
+        const { username } = req.user
         if (!username) {
-           return res.status(StatusCodes.BAD_REQUEST).json({ message: "Please Provide User Name" })
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Please Provide User Name" })
         }
         const user = await User.findOne({ username: username })
         if (!user) {
@@ -42,7 +42,7 @@ export const getAllRepairOrders = async (req, res) => {
             populate('SelectedPark', ' location.parkingName').
             populate('carProblem')
         if (!orders) {
-          return  res.status(StatusCodes.BAD_REQUEST).json({ message: "No Orders For This User" })
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "No Orders For This User" })
         }
 
         return res.status(StatusCodes.ACCEPTED).json(orders)
@@ -53,36 +53,36 @@ export const getAllRepairOrders = async (req, res) => {
     }
 
 }
-export const DeleteOrderParking =async(req,res)=>{
-    const {id:orderId}= req.body
-    if(!orderId){
-        return res.status(StatusCodes.BAD_REQUEST).json({message :"Please PRovide Order ID"})
+export const DeleteOrderParking = async (req, res) => {
+    const { id: orderId } = req.body
+    if (!orderId) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: "Please PRovide Order ID" })
 
     }
-    const order = await ParkingOrder.findOneAndDelete({_id:orderId})
-    if(!order){
-        return res.status(StatusCodes.BAD_REQUEST).json({message :"Could'nt find the order"})
+    const order = await ParkingOrder.findOneAndDelete({ _id: orderId })
+    if (!order) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: "Could'nt find the order" })
 
     }
     
 
-return res.status(StatusCodes.OK).json({messgae :"deleted Sucessfuly"})
+    return res.status(StatusCodes.OK).json({ messgae: "deleted Sucessfuly" })
 
 }
 
-export const DeleteOrderRepair =async(req,res)=>{
-    const {id:orderId}= req.body
-    if(!orderId){
-        return res.status(StatusCodes.BAD_REQUEST).json({message :"Please PRovide Order ID"})
+export const DeleteOrderRepair = async (req, res) => {
+    const { id: orderId } = req.body
+    if (!orderId) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: "Please PRovide Order ID" })
 
     }
-    const order = await RepairOrder.findOneAndDelete({_id:orderId})
-    if(!order){
-        return res.status(StatusCodes.BAD_REQUEST).json({message :"Could'nt find the order"})
+    const order = await RepairOrder.findOneAndDelete({ _id: orderId })
+    if (!order) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: "Could'nt find the order" })
 
     }
 
-return res.status(StatusCodes.OK).json({messgae :"deleted Sucessfuly"})
+    return res.status(StatusCodes.OK).json({ messgae: "deleted Sucessfuly" })
 
 }
 

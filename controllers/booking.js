@@ -8,6 +8,10 @@ import ParkingOrder from "../modules/ParkingOrder.js";
 //import * as service from '../fir-e8b4f-firebase-adminsdk-7jn1h-1d173a25b7.json' with {type}
 //const s=JSON.parse(service)
 import Admin from '../modules/Admins.js'
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
 import io from "../app.js";
 import RepairOrder from "../modules/RepairOrder.js";
 import { getUsers } from '../app.js'
@@ -17,6 +21,7 @@ import { getUsers } from '../app.js'
 
 export const bookingPark = async (req, res) => {
     try {
+<<<<<<< HEAD
         const { username, duration, Spot, date } = req.body;
         console.log('date : ', date);
         console.log(duration);
@@ -24,6 +29,13 @@ export const bookingPark = async (req, res) => {
         if (!username || !duration || !Spot || !date) {
             const message = req.cookies.language === 'ar' ? 'الرجاء إدخال جميع المعلومات' : 'All inputs are Required';
             return res.status(StatusCodes.BAD_REQUEST).json({ message: message })
+=======
+        const { duration, Spot, date } = req.body;
+        const username = req.user
+        const parkingName = req.body.parkingName;
+        if (!username || !duration || !Spot || !date) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "All inputs are Required" })
+>>>>>>> origin/main
         }
         const now = new Date()
         /// create a new date object and set time t0 00:00:00
@@ -49,8 +61,12 @@ export const bookingPark = async (req, res) => {
         const user = await User.findOne({ username }).populate('car');
         //console.log(user);
         if (!user) {
+<<<<<<< HEAD
             const message = req.cookies.language === 'ar' ? 'لم يتم تاكيد حساب المستخدم الرجاء التاكد والمحاولة مرة اخرى' : 'user  is not valid pleas check the user name';
             return res.status(StatusCodes.BAD_GATEWAY).json({ message: message })
+=======
+            return res.status(StatusCodes.BAD_GATEWAY).json({ message: "user  is not valid pleas check the user name" })
+>>>>>>> origin/main
         }
         // console.log(user.car);
         const carNumber = user.car.carNumber
@@ -88,6 +104,7 @@ export const bookingPark = async (req, res) => {
             Price: paymentAmount
 
         })
+<<<<<<< HEAD
         await ParkOrder.populate('userId', 'email firstName lastName bookedPark.bookingEndTime')
         await ParkOrder.populate('SelectedPark', 'location.parkingName')
         const ParkingOrder2 = await ParkingOrder.findOne({ _id: ParkOrder._id })
@@ -96,6 +113,10 @@ export const bookingPark = async (req, res) => {
         ParkingOrder2.orderFinishDate = ParkingOrder2.userId.bookedPark.bookingEndTime
         delete ParkingOrder2.userId.bookedPark
 
+=======
+        await ParkOrder.populate('userId', 'email firstName lastName')
+        await ParkOrder.populate('SelectedPark', 'location.parkingName')
+>>>>>>> origin/main
         // populate('userId', 'email firstName lastName').populate('SelectedPark', 'location.Price location.parkingName')
         //
         // if (bookedParkAdmin && bookedParkAdmin.socketId) {
@@ -109,13 +130,19 @@ export const bookingPark = async (req, res) => {
         //     })
         let u = getUsers()
         console.log(u);
+<<<<<<< HEAD
 
         const Adminname = parkChoosed.Admin.username
         let socketId = u.find(user => user.user == Adminname)
         if (socketId) {
             io.to(socketId.id).emit('add', ParkingOrder2)
         }
+=======
+>>>>>>> origin/main
 
+        const Adminname = parkChoosed.Admin.username
+        let socketId = u.find(user => user.user == Adminname)
+        io.to(socketId.id).emit('add', ParkOrder)
 
         return res.status(200).json({
             parkNumber: emptyPark.parkNumber,
@@ -137,8 +164,8 @@ export const bookingPark = async (req, res) => {
 export const bookingRepairPark = async (req, res) => {
     try {
         // const userName = req.params.username
-        const { parkNumber, Problem, userName } = req.body
-
+        const { parkNumber, Problem } = req.body
+        const username = req.user
 
 
 
@@ -218,8 +245,12 @@ export const bookingRepairPark = async (req, res) => {
 
         })
         if (!Order) {
+<<<<<<< HEAD
             const message = req.cookies.language === 'ar' ? ' لم يتم تنفيذ الحجز' : 'Order Did not Created';
             return res.status(StatusCodes.BAD_REQUEST).json({ message: message })
+=======
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Order Didn't Created" })
+>>>>>>> origin/main
         }
 
         return res.status(200).json({ Location: selectedPark.location.parkingName, Problem: Problem, EstimatedTime: ProblemInfo.duration, Price: ProblemInfo.Price, image: ProblemInfo.image })
@@ -266,8 +297,12 @@ export const ParkingTimer = async (req, res) => {
         const { parkNumber, bookingEndTime } = user.bookedPark;
         const parkingName = await Parking.findOne({ "location.parkingName": user.bookedPark.ChoosedParkName })
         if (!parkingName) {
+<<<<<<< HEAD
             const message = req.cookies.language === 'ar' ? '!!! لم تقم باختيار اي مكان للركن بعد  ' : "Yoy have't choosed any park yet !!!"
             return res.status(StatusCodes.BAD_REQUEST).json({ message: message, hours: 0, minutes: 0, seconds: 0 })
+=======
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: "Yoy have't choosed any aprk yet !!!", hours: 0, minutes: 0, seconds: 0 })
+>>>>>>> origin/main
         }
         const park = parkingName.park.find(park => park.parkNumber == parkNumber)
         const duration = park.duration
@@ -280,11 +315,16 @@ export const ParkingTimer = async (req, res) => {
 
         // Check if the parking time hasn't started yet
         if (currentTime < adjustedBookingEndTime) {
+<<<<<<< HEAD
             return res.status(StatusCodes.OK).json({ message: "Parking Time Hasn't Started Yet", hours: 0, minutes: 0, seconds: 0 });
+=======
+            return res.status(StatusCodes.OK).json({ message: 'Parking Time Hasn\'t Started Yet', hours: 0, minutes: 0, seconds: 0 });
+>>>>>>> origin/main
         }
 
         // Check if the parking time has ended
         if (currentTime > adjustedBookingEndTime.setHours(adjustedBookingEndTime.getHours() + park.duration)) {
+<<<<<<< HEAD
             park.duration = 0
             park.filled = false
             park.carNumber = null
@@ -295,6 +335,19 @@ export const ParkingTimer = async (req, res) => {
             await parkingName.save()
             const message = req.cookies.language === 'ar' ? 'تم انتهاء وقت الحجز ' : "Parking Time Has Ended"
             return res.status(StatusCodes.OK).json({ message: message, hours: 0, minutes: 0, seconds: 0 })
+=======
+            // park.duration=0
+            // park.filled=false
+            // park.carNumber=null
+            // user.bookedPark.ChoosedParkName=null,
+            // user.bookedPark.bookingEndTime=null,
+            // user.bookedPark.parkNumber=null
+            // await user.save()
+            // await parkingName.save()
+
+
+            return res.status(StatusCodes.OK).json({ message: 'Parking Time Has Ended', hours: 0, minutes: 0, seconds: 0 });
+>>>>>>> origin/main
         }
 
         // Calculate the remaining time in milliseconds
@@ -323,11 +376,40 @@ export const ExpandParkingTime = async (req, res) => {
         return res.status(StatusCodes.BAD_REQUEST).json({ message: "could'nt Find user " })
     }
     if (!user.bookedPark) {
+<<<<<<< HEAD
         const message = req.cookies.language === 'ar' ? 'لم تقم بالحجز بعد' : "You have'nt booked any park yet"
         return res.status(StatusCodes.OK).json({ message: message })
     }
     let bookingEndTime = user.bookedPark.bookingEndTime
     let newBookingEndDate = new Date(bookingEndTime.getTime() + duration * 60 * 60 * 1000)
+=======
+        return res.status(StatusCodes.OK).json({ message: "You have'nt booked any park yet " })
+    }
+    let bookingEndTime = user.bookedPark.bookingEndTime
+    let newBookingEndDate = new Date(bookingEndTime.getTime() + duration * 60 * 60 * 1000)
+
+    user.bookedPark.bookingEndTime = user.bookedPark.bookingEndTime.getTime() + (duration * 60 * 60 * 1000)
+
+    await user.save()
+    const Park = await Parking.findOne({ 'location.parkingName': user.bookedPark.ChoosedParkName })
+    if (!Park) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ messgae: "could'nt Find Park" })
+    }
+    const spot = Park.park.find(object => object.parkNumber == user.bookedPark.parkNumber)
+    spot.bookingEndTime = user.bookedPark.bookingEndTime + (duration * 60 * 60 * 1000)
+    spot.duration += duration
+    await Park.save()
+    const order = await ParkingOrder.findOne({ userId: user._id })
+    if (!order) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: "order not found" })
+    }
+    const oldduration = order.duration
+    order.duration = oldduration + duration
+    const oldPrice = order.Price
+    order.Price = oldPrice + (duration * Park.location.Price)
+
+    order.save()
+>>>>>>> origin/main
 
     user.bookedPark.bookingEndTime = user.bookedPark.bookingEndTime.getTime() + (duration * 60 * 60 * 1000)
 
